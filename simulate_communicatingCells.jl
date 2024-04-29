@@ -215,11 +215,11 @@ end
 ### Test:
 # Define which groups sends signals to which group in a binary communication graph/matrix (sender groups x receiver groups):
 # Note: This is just an example.
-communication_graph = [1 0 0 0; 0 1 0 0; 0 1 0 0; 0 0 1 0];
+# communication_graph = [1 0 0 0; 0 1 0 0; 0 1 0 0; 0 0 1 0];
 
 # Generate the simulated data (set a seed for reproducibility):
-dataset, group_communication_matrix, cell_group_assignments, sel_receptors, sel_ligands, communications = simulate_interacting_singleCells(1000, 60, 4; seed=7, communication_graph = communication_graph)
+# dataset, group_communication_matrix, cell_group_assignments, sel_receptors, sel_ligands, communications = simulate_interacting_singleCells(1000, 60, 4; seed=7, communication_graph = communication_graph)
 
 # Plot the simulated gene expression data:
-heatmap(dataset)
-heatmap(group_communication_matrix)
+# heatmap(dataset)
+# heatmap(group_communication_matrix)
