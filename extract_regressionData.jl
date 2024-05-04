@@ -14,7 +14,13 @@ function highest_interaction_matching(sel_group::Int, sel_communication::String,
 end
 
 function standardize(X::AbstractArray; corrected_std::Bool=true, dims::Int=1)
-    return (X .- mean(X, dims=dims))./ std(X, corrected=corrected_std, dims=dims)   
+    X = (X .- mean(X, dims=dims))./ std(X, corrected=corrected_std, dims=dims)
+    for i in 1:size(X)[2]
+        if sum(isnan.(X[:, i])) > 0
+            X[:, i] = zeros(size(X)[1])
+        end
+    end
+    return X
 end
 
 function get_X_y(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communications::Dict{Any, Any}, sel_group::Int, sel_communication::String, n_cells::Int, n_groups::Int)
