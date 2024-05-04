@@ -17,15 +17,5 @@ dataset, group_communication_matrix, cell_group_assignments, sel_receptors, sel_
 
 regression_data = extract_regression_data(dataset, sel_receptors, communications, n_cells, n_groups)
 
-# Perform componentwise boosting using X and y:
-
-ϵ = 0.1 #learning rate (step width) for the boosting 
-M = 2 #number of boosting steps 
-#β = zeros(size(X, 2)) #start with a zero initialization of the coefficient vector
-
-#compL2Boost!(β, X, y, ϵ, M) 
-
-# Display the learned coefficients:
-#println(β)
-#println("\nMean Squared Error compBoost:")
-#println(mean((y-X*β).^2))
+# Perform componentwise boosting using X and y from regression_data:
+beta_vectors = get_beta_vectors(regression_data)

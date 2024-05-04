@@ -22,8 +22,9 @@ function calcunibeta(X::AbstractMatrix{<:AbstractFloat}, res::AbstractVector{<:A
     unibeta = zeros(p)
     denom = zeros(p)
 
-    #compute the univariate OLLS-estimator for each component 1:p:
-    for j = 1:p
+    idx_lst = findall(x->x!=0, vec(sum(X,dims=1)))
+    #compute the univariate OLLS-estimator for each component from idx_lst:
+    for j in idx_lst
 
        for i=1:n
           unibeta[j] += X[i, j]*res[i]
@@ -73,5 +74,19 @@ function compL2Boost!(β::AbstractVector{<:AbstractFloat}, X::AbstractMatrix{<:A
         β[optindex] += unibeta[optindex] * ϵ 
 
     end
+end
 
+function get_beta_vectors(regression_data::Dict{Any, Any})
+    ϵ = 0.01 #learning rate (step width) for the boosting
+    M = 100 #number of boosting steps
+
+    beta_vectors = Dict()
+    for sel_communication in keys(regression_data)
+        X = regression_data[sel_communication][1]
+        y = regression_data[sel_communication][2]
+        β = zeros(size(X, 2)) #start with a zero initialization of the coefficient vector
+        compL2Boost!(β, X, y, ϵ, M)
+        beta_vectors[sel_communication] = β
+    end
+    return beta_vectors
 end
