@@ -1,3 +1,18 @@
+"""
+    highest_interaction_matching(sel_group::Int, sel_communication::String, communications::Dict{Any, Any}, n_cells::Int, n_groups::Int)
+
+Determine the cells with the highest interaction for each group in a given communication.
+
+# Arguments
+- `sel_group::Int`: The selected recepting group.
+- `sel_communication::String`: The selected communication.
+- `communications::Dict{Any, Any}`: A dictionary containing dataframes with interaction scores between all pairs of cells for each communication.
+- `n_cells::Int`: The total number of cells in the dataset.
+- `n_groups::Int`: The total number of groups in the dataset.
+
+# Returns
+- `highest_interaction_pairs::Vector{Int}`: A vector containing the cells with the highest interaction for each group in the selected communication.
+"""
 function highest_interaction_matching(sel_group::Int, sel_communication::String, communications::Dict{Any, Any}, n_cells::Int, n_groups::Int)
     interaction_df = communications[sel_communication]
     n_cells_per_group = n_cells ÷ n_groups
@@ -13,8 +28,23 @@ function highest_interaction_matching(sel_group::Int, sel_communication::String,
     return highest_interaction_pairs
 end
 
+"""
+    standardize(X::AbstractArray; corrected_std::Bool=true, dims::Int=1)
+
+Standardize the input data matrix by subtracting the mean and dividing by the standard deviation.
+
+# Arguments
+- `X::AbstractArray`: The input data matrix.
+- `corrected_std::Bool=true`: A boolean indicating whether the corrected standard deviation should be used.
+- `dims::Int=1`: The dimension along which the mean and standard deviation should be computed.
+
+# Returns
+- `X::AbstractArray`: The standardized data matrix.
+"""
 function standardize(X::AbstractArray; corrected_std::Bool=true, dims::Int=1)
     X = (X .- mean(X, dims=dims))./ std(X, corrected=corrected_std, dims=dims)
+
+    # Replace NaN values with zeros:
     for i in 1:size(X)[2]
         if sum(isnan.(X[:, i])) > 0
             X[:, i] = zeros(size(X)[1])
@@ -23,6 +53,24 @@ function standardize(X::AbstractArray; corrected_std::Bool=true, dims::Int=1)
     return X
 end
 
+"""
+    get_X_y(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communications::Dict{Any, Any}, sel_group::Int, sel_communication::String, n_cells::Int, n_groups::Int)
+
+Extract the design matrix X and the response vector y for a given group and communication.
+
+# Arguments
+- `dataset::Matrix{Float32}`: The dataset containing the expression values of all genes.
+- `sel_receptors::Vector{Any}`: A vector containing the number of the selected receptors for each group.
+- `communications::Dict{Any, Any}`: A dictionary containing dataframes with interaction scores between all pairs of cells for each communication.
+- `sel_group::Int`: The selected recepting group.
+- `sel_communication::String`: The selected communication.
+- `n_cells::Int`: The total number of cells in the dataset.
+- `n_groups::Int`: The total number of groups in the dataset.
+
+# Returns
+- `X::Matrix{Float32}`: The design matrix for given communication.
+- `y::Vector{Float32}`: The response vector for given communication.
+"""
 function get_X_y(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communications::Dict{Any, Any}, sel_group::Int, sel_communication::String, n_cells::Int, n_groups::Int)
     # Define the data matrix X and the response vector y:
     sel_receptor = sel_receptors[sel_group]
@@ -42,6 +90,21 @@ function get_X_y(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communica
     return X, y
 end
 
+"""
+    extract_regression_data(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communications::Dict{Any, Any}, n_cells::Int, n_groups::Int)
+
+Extract the design matrices and response vectors for each communication.
+
+# Arguments
+- `dataset::Matrix{Float32}`: The dataset containing the expression values of all genes.
+- `sel_receptors::Vector{Any}`: A vector containing the number of the selected receptors for each group.
+- `communications::Dict{Any, Any}`: A dictionary containing dataframes with interaction scores between all pairs of cells for each communication.
+- `n_cells::Int`: The total number of cells in the dataset.
+- `n_groups::Int`: The total number of groups in the dataset.
+
+# Returns
+- `regression_data::Dict{Any, Any}`: A dictionary containing the standardized design matrices and response vectors for each communication.
+"""
 function extract_regression_data(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communications::Dict{Any, Any}, n_cells::Int, n_groups::Int)
     communications_keys = keys(communications)
     regression_data = Dict()

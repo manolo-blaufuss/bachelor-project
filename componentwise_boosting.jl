@@ -76,6 +76,17 @@ function compL2Boost!(β::AbstractVector{<:AbstractFloat}, X::AbstractMatrix{<:A
     end
 end
 
+"""
+    get_beta_vectors(regression_data::Dict{Any, Any})
+
+Compute the OLLS-estimator for each component of the design matrix for each communication.
+
+# Arguments
+- `regression_data::Dict{Any, Any}`: A dictionary containing the standardized design matrices and response vectors for each communication.
+
+# Returns
+- `beta_vectors::Dict{Any, Any}`: A dictionary containing the OLLS-estimators for each component of the design matrix for each communication.
+"""
 function get_beta_vectors(regression_data::Dict{Any, Any})
     ϵ = 0.01 #learning rate (step width) for the boosting
     M = 100 #number of boosting steps
