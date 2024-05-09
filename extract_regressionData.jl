@@ -21,11 +21,12 @@ function highest_interaction_matching(sel_group::Int, sel_communication::String,
     for i in 1:n_cells_per_group
         start_row = ((sel_group - 1)*n_cells*n_cells_per_group)+(i-1)*n_cells+1
         end_row = start_row + n_cells - 1
-        #highest_interaction_row = argmax(interaction_df[start_row : end_row, :GeometricMean])
+        #highest_interaction_row = start_row + argmax(interaction_df[start_row : end_row, :GeometricMean]) -1
         #highest_interaction_pairs[i] = interaction_df[highest_interaction_row, :Sender]
+
         sorted_rows = sortperm(interaction_df[start_row : end_row, :GeometricMean], rev=true)
         for sorted_row in sorted_rows
-            potential_highest_interaction = interaction_df[sorted_row, :Sender]
+            potential_highest_interaction = interaction_df[start_row + sorted_row - 1, :Sender]
             if !(potential_highest_interaction in highest_interaction_pairs)
                 highest_interaction_pairs[i] = potential_highest_interaction
                 break
@@ -88,11 +89,15 @@ function get_X_y(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communica
     end_cell = start_cell + n_cells_per_group - 1
     y = receptor_expression[start_cell:end_cell]
 
+    # Select rows with receptor expression > 0:
+    non_zero_indices = findall(x -> x > 0, y)
+    y = y[non_zero_indices]
+
     highest_interaction_pairs = highest_interaction_matching(sel_group, sel_communication, communications, n_cells, n_groups)
-    X = zeros(n_cells_per_group, size(dataset)[2])
-    for i in 1:n_cells_per_group
+    X = zeros(length(non_zero_indices), size(dataset)[2])
+    for i in 1:length(non_zero_indices)
         for j in 1: size(dataset)[2]
-            X[i, j] = dataset[highest_interaction_pairs[i], j]
+            X[i, j] = dataset[highest_interaction_pairs[non_zero_indices[i]], j]
         end
     end
     return X, y
