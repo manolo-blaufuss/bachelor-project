@@ -209,7 +209,7 @@ function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60
         end
     end
 
-    return Float32.(dataset), group_communication_matrix, cell_group_assignments, sel_receptors, sel_ligands, communications
+    return Float32.(dataset), group_communication_matrix, cell_group_assignments, receptor_genes, sel_receptors, ligand_genes, sel_ligands, communications
 end
 
 ### Test:

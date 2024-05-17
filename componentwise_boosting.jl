@@ -87,17 +87,18 @@ Compute the OLLS-estimator for each component of the design matrix for each comm
 # Returns
 - `beta_vectors::Dict{Any, Any}`: A dictionary containing the OLLS-estimators for each component of the design matrix for each communication.
 """
-function get_beta_vectors(regression_data::Dict{Any, Any})
+function get_beta_matrix(regression_data::Tuple{Any, Any})
     ϵ = 0.2 #learning rate (step width) for the boosting
     M = 5 #number of boosting steps
 
-    beta_vectors = Dict()
-    for sel_communication in keys(regression_data)
-        X = regression_data[sel_communication][1]
-        y = regression_data[sel_communication][2]
+    X = regression_data[1]
+    Y = regression_data[2]
+    beta_matrix = zeros(size(X, 2), size(Y, 2))
+    for i in 1:size(Y, 2)
+        y = Y[:, i]
         β = zeros(size(X, 2)) #start with a zero initialization of the coefficient vector
         compL2Boost!(β, X, y, ϵ, M)
-        beta_vectors[sel_communication] = β
+        beta_matrix[:, i] = β
     end
-    return beta_vectors
+    return beta_matrix
 end

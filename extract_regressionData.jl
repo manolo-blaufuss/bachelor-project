@@ -1,46 +1,3 @@
-"""
-    highest_interaction_matching(sel_group::Int, sel_communication::String, communications::Dict{Any, Any}, n_cells::Int, n_groups::Int)
-
-Determine the cells with the highest interaction for each group in a given communication.
-
-# Arguments
-- `sel_group::Int`: The selected recepting group.
-- `sel_communication::String`: The selected communication.
-- `communications::Dict{Any, Any}`: A dictionary containing dataframes with interaction scores between all pairs of cells for each communication.
-- `n_cells::Int`: The total number of cells in the dataset.
-- `n_groups::Int`: The total number of groups in the dataset.
-
-# Returns
-- `highest_interaction_pairs::Vector{Int}`: A vector containing the cells with the highest interaction for each group in the selected communication.
-"""
-function highest_interaction_matching(sel_group::Int, sel_communication::String, communications::Dict{Any, Any}, n_cells::Int, n_groups::Int)
-    interaction_df = communications[sel_communication]
-    n_cells_per_group = n_cells ÷ n_groups
-
-    highest_interaction_pairs = zeros(n_cells_per_group)
-    for i in 1:n_cells_per_group
-        start_row = ((sel_group - 1)*n_cells*n_cells_per_group)+(i-1)*n_cells+1
-        end_row = start_row + n_cells - 1
-        highest_interaction_row = start_row + argmax(interaction_df[start_row : end_row, :GeometricMean]) - 1
-        highest_interaction_pairs[i] = interaction_df[highest_interaction_row, :Sender]
-    end
-    highest_interaction_pairs = Int.(highest_interaction_pairs)
-    return highest_interaction_pairs
-end
-
-"""
-    standardize(X::AbstractArray; corrected_std::Bool=true, dims::Int=1)
-
-Standardize the input data matrix by subtracting the mean and dividing by the standard deviation.
-
-# Arguments
-- `X::AbstractArray`: The input data matrix.
-- `corrected_std::Bool=true`: A boolean indicating whether the corrected standard deviation should be used.
-- `dims::Int=1`: The dimension along which the mean and standard deviation should be computed.
-
-# Returns
-- `X::AbstractArray`: The standardized data matrix.
-"""
 function standardize(X::AbstractArray; corrected_std::Bool=true, dims::Int=1)
     X = (X .- mean(X, dims=dims))./ std(X, corrected=corrected_std, dims=dims)
 
@@ -53,65 +10,69 @@ function standardize(X::AbstractArray; corrected_std::Bool=true, dims::Int=1)
     return X
 end
 
-"""
-    get_X_y(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communications::Dict{Any, Any}, sel_group::Int, sel_communication::String, n_cells::Int, n_groups::Int)
-
-Extract the design matrix X and the response vector y for a given group and communication.
-
-# Arguments
-- `dataset::Matrix{Float32}`: The dataset containing the expression values of all genes.
-- `sel_receptors::Vector{Any}`: A vector containing the number of the selected receptors for each group.
-- `communications::Dict{Any, Any}`: A dictionary containing dataframes with interaction scores between all pairs of cells for each communication.
-- `sel_group::Int`: The selected recepting group.
-- `sel_communication::String`: The selected communication.
-- `n_cells::Int`: The total number of cells in the dataset.
-- `n_groups::Int`: The total number of groups in the dataset.
-
-# Returns
-- `X::Matrix{Float32}`: The design matrix for given communication.
-- `y::Vector{Float32}`: The response vector for given communication.
-"""
-function get_X_y(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communications::Dict{Any, Any}, sel_group::Int, sel_communication::String, n_cells::Int, n_groups::Int)
-    # Define the data matrix X and the response vector y:
-    sel_receptor = sel_receptors[sel_group]
-    receptor_expression = dataset[:, sel_receptor]
-    n_cells_per_group = n_cells ÷ n_groups
-    start_cell = (sel_group - 1)*n_cells_per_group + 1
-    end_cell = start_cell + n_cells_per_group - 1
-    y = receptor_expression[start_cell:end_cell]
-
-    highest_interaction_pairs = highest_interaction_matching(sel_group, sel_communication, communications, n_cells, n_groups)
-    X = zeros(n_cells_per_group, size(dataset)[2])
-    for i in 1:n_cells_per_group
-        for j in 1: size(dataset)[2]
-            X[i, j] = dataset[highest_interaction_pairs[i], j]
-        end
+function get_y(dataset::Matrix{Float32}, receptor_idx::Int, communication_idxs::Vector{Int})
+    # Define the response vector y:
+    receptor_expression = dataset[:, receptor_idx]
+    y = zeros(length(receptor_expression))
+    for i in 1:length(receptor_expression)
+        y[i] = receptor_expression[communication_idxs[i]]
     end
-    return X, y
+    return (y .- mean(y))./ std(y, corrected=true)
 end
 
-"""
-    extract_regression_data(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communications::Dict{Any, Any}, n_cells::Int, n_groups::Int)
-
-Extract the design matrices and response vectors for each communication.
-
-# Arguments
-- `dataset::Matrix{Float32}`: The dataset containing the expression values of all genes.
-- `sel_receptors::Vector{Any}`: A vector containing the number of the selected receptors for each group.
-- `communications::Dict{Any, Any}`: A dictionary containing dataframes with interaction scores between all pairs of cells for each communication.
-- `n_cells::Int`: The total number of cells in the dataset.
-- `n_groups::Int`: The total number of groups in the dataset.
-
-# Returns
-- `regression_data::Dict{Any, Any}`: A dictionary containing the standardized design matrices and response vectors for each communication.
-"""
-function extract_regression_data(dataset::Matrix{Float32}, sel_receptors::Vector{Any}, communications::Dict{Any, Any}, n_cells::Int, n_groups::Int)
-    communications_keys = keys(communications)
-    regression_data = Dict()
-    for sel_communication in communications_keys
-        sel_group = parse(Int, sel_communication[13])
-        X, y = get_X_y(dataset, sel_receptors, communications, sel_group, sel_communication, n_cells, n_groups)
-        regression_data[sel_communication] = (standardize(X), y)
+function assign_communication_partners(n_cells::Int, n_groups::Int, communication_pairs::Vector{Any})
+    communication_idxs = zeros(Int, n_cells)
+    n_cells_per_group = n_cells ÷ n_groups
+    threshold = round(Int, 0.7 * n_cells_per_group)
+    for sel_communication in communication_pairs
+        sender_group = sel_communication[1]
+        receiver_group = sel_communication[2]
+        sender_start_idx = (sender_group - 1) * n_cells_per_group + 1
+        sender_end_idx = sender_start_idx + n_cells_per_group - 1
+        receiver_start_idx = (receiver_group - 1) * n_cells_per_group + 1
+        # receiver_end_idx = receiver_start_idx + n_cells_per_group - 1
+        sample_idxs = setdiff(1:n_cells, sender_start_idx:sender_end_idx)
+        for i in 0:n_cells_per_group-1
+            if i < threshold
+                communication_idxs[sender_start_idx + i] = receiver_start_idx + i
+            else
+                communication_idxs[sender_start_idx + i] = rand(sample_idxs)
+            end
+        end
     end
-    return regression_data
+    return communication_idxs
+end
+
+function extract_regression_data(dataset::Matrix{Float32}, receptor_genes::Dict{Any, Any}, n_cells::Int, n_groups::Int)
+    # Get communication pairs:
+    communication_pairs = []
+    for i in 1:n_groups
+        for j in 1:n_groups
+            if communication_graph[i, j] == 1
+                push!(communication_pairs, (i, j))
+            end
+        end
+    end
+    
+    # Assign communication partners for each cell:
+    communication_idxs = assign_communication_partners(n_cells, n_groups, communication_pairs)
+    
+    # Set X:
+    X = standardize(dataset)
+
+    # Get Matrix containing y for each receptor gene:
+    receptor_idxs = []
+    for group in keys(receptor_genes)
+        for receptor in receptor_genes[group]
+            push!(receptor_idxs, receptor)
+        end
+    end
+    receptor_idxs = sort(receptor_idxs)
+    Y = zeros(n_cells, length(receptor_idxs))
+    for i in 1:length(receptor_idxs)
+        Y[:, i] = get_y(dataset, receptor_idxs[i], communication_idxs)
+    end
+
+
+    return X, Y
 end
