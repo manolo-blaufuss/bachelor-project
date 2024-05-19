@@ -1,4 +1,4 @@
-using StatsBase
+using LinearAlgebra
 
 include("simulate_communicatingCells.jl")
 include("componentwise_boosting.jl")

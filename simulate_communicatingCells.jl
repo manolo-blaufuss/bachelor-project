@@ -36,9 +36,11 @@ Simulates the expression levels of genes in interacting single cells.
 - `dataset::Matrix{Float32}`: The simulated expression dataset.
 - `group_communication_matrix::Matrix{Int}`: The communication graph between cell groups.
 - `cell_group_assignments::Vector{String}`: The assignments of cells to cell groups.
+- `receptor_genes::Dict{Any, Any}`: The receptor genes for each cell group.
 - `sel_receptors::Vector{Any}`: The selected receptor genes for each cell group.
+- `ligand_genes::Dict{Any, Any}`: The ligand genes for each cell group.
 - `sel_ligands::Vector{Any}`: The selected ligand genes for each cell group.
-- `communications::Dict{String, DataFrame}`: The pairwise communication dataframes between cell groups. Each dataframe contains the sender, receiver, and geometric mean of the ligand and receptor genes.
+- ###`communications::Dict{String, DataFrame}`: The pairwise communication dataframes between cell groups. Each dataframe contains the sender, receiver, and geometric mean of the ligand and receptor genes.
 """
 function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60, n_groups::Int = 4;
         dropout_rate::Real = 0.2,
@@ -179,7 +181,7 @@ function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60
     # Round all Float values integers:
     dataset = round.(Int, dataset)
 
-
+    """
     ## Compute pairwise geometric mean between all ligand genes and all receptor genes
     #pairwise_geometric_means = Dict()
     communications = Dict()
@@ -208,8 +210,9 @@ function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60
             end
         end
     end
+    """
 
-    return Float32.(dataset), group_communication_matrix, cell_group_assignments, receptor_genes, sel_receptors, ligand_genes, sel_ligands, communications
+    return Float32.(dataset), group_communication_matrix, cell_group_assignments, receptor_genes, sel_receptors, ligand_genes, sel_ligands#, communications
 end
 
 ### Test:
