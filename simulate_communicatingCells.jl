@@ -1,6 +1,3 @@
-# Loading required packages for the simulation (if not already installed, first install via: `using Pkg; Pkg.add("PackageName")`):
-using Distributions, Plots, Random, StatsBase, DataFrames
-
 """
 simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60, n_groups::Int = 4;
         dropout_rate::Real = 0.2,
@@ -198,7 +195,7 @@ function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60
                 df[!, "GroupInteraction"] = cell_group_interaction_vec
                 geometric_means = vec([sqrt(ligand_expression[a] * receptor_expression[b]) for a in 1:length(ligand_expression), b in 1:length(receptor_expression)])
                 df[!, "GeometricMean"] = geometric_means
-                cell_pair = vec(["$(a)"*"-"*"$(b)" for a in 1:length(ligand_expression), b in 1:length(receptor_expression)])
+                cell_pair = vec(["dollar(a)"*"-"*"dollar(b)" for a in 1:length(ligand_expression), b in 1:length(receptor_expression)])
                 df[!, "CellPair"] = cell_pair
                 senders = vec([a for a in 1:length(ligand_expression), b in 1:length(receptor_expression)])
                 df[!, "Sender"] = senders
@@ -206,7 +203,7 @@ function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60
                 df[!, "Receiver"] = receivers
                 
                 # Compute geometric mean
-                communications["Group$(i)" * "-" * "Group$(j)"] = df
+                communications["Groupdollar(i)" * "-" * "Groupdollar(j)"] = df
             end
         end
     end

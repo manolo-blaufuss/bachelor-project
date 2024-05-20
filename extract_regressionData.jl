@@ -88,7 +88,7 @@ Extract the regression data for componentwise boosting.
 
 # Arguments
 - `dataset::Matrix{Float32}`: The input dataset.
-- `receptor_genes::Dict{Any, Any}`: The dictionary containing the receptor genes for each group.
+- `receptor_idxs::AbstractVector{<:AbstractFloat}`: The dictionary containing the receptor genes for each group.
 - `n_cells::Int`: The number of cells.
 - `n_groups::Int`: The number of groups.
 
@@ -96,7 +96,7 @@ Extract the regression data for componentwise boosting.
 - `X::Matrix{Float32}`: The standardized design matrix X.
 - `Y::Matrix{Float32}`: The response matrix Y.
 """
-function extract_regression_data(dataset::Matrix{Float32}, receptor_genes::Dict{Any, Any}, n_cells::Int, n_groups::Int)
+function extract_regression_data(dataset::Matrix{Float32}, receptor_idxs::AbstractVector{<:AbstractFloat}, n_cells::Int, n_groups::Int)
     # Get communication pairs:
     communication_pairs = []
     for i in 1:n_groups
@@ -114,13 +114,6 @@ function extract_regression_data(dataset::Matrix{Float32}, receptor_genes::Dict{
     X = standardize(dataset)
 
     # Get Matrix containing y for each receptor gene:
-    receptor_idxs = []
-    for group in keys(receptor_genes)
-        for receptor in receptor_genes[group]
-            push!(receptor_idxs, receptor)
-        end
-    end
-    receptor_idxs = sort(receptor_idxs)
     Y = zeros(n_cells, length(receptor_idxs))
     for i in 1:length(receptor_idxs)
         Y[:, i] = get_y(dataset, receptor_idxs[i], communication_idxs)
