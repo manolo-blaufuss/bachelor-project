@@ -89,7 +89,7 @@ Compute the OLLS-estimator for each component of the design matrix for each comm
 """
 function get_beta_matrix(regression_data::Tuple{Any, Any})
     ϵ = 0.2 #learning rate (step width) for the boosting
-    M = 5 #number of boosting steps
+    M = 7 #number of boosting steps
 
     X = regression_data[1]
     Y = regression_data[2]

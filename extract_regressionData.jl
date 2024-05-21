@@ -82,13 +82,13 @@ function assign_communication_partners(n_cells::Int, n_groups::Int, communicatio
     return communication_idxs
 end
 """
-    extract_regression_data(dataset::Matrix{Float32}, receptor_genes::Dict{Any, Any}, n_cells::Int, n_groups::Int)
+    extract_regression_data(dataset::Matrix{Float32}, receptor_idxs::Vector{Any}, n_cells::Int, n_groups::Int)
 
 Extract the regression data for componentwise boosting.
 
 # Arguments
 - `dataset::Matrix{Float32}`: The input dataset.
-- `receptor_idxs::AbstractVector{<:AbstractFloat}`: The dictionary containing the receptor genes for each group.
+- `receptor_idxs::Vector{Any}`: The dictionary containing the receptor genes for each group.
 - `n_cells::Int`: The number of cells.
 - `n_groups::Int`: The number of groups.
 
@@ -96,7 +96,7 @@ Extract the regression data for componentwise boosting.
 - `X::Matrix{Float32}`: The standardized design matrix X.
 - `Y::Matrix{Float32}`: The response matrix Y.
 """
-function extract_regression_data(dataset::Matrix{Float32}, receptor_idxs::AbstractVector{<:AbstractFloat}, n_cells::Int, n_groups::Int)
+function extract_regression_data(dataset::Matrix{Float32}, receptor_idxs::Vector{Any}, n_cells::Int, n_groups::Int)
     # Get communication pairs:
     communication_pairs = []
     for i in 1:n_groups

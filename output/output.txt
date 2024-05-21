@@ -1,0 +1,449 @@
+julia> # Example results using 7 boosting steps, boosting width 0.2
+
+julia> #Ligand genes:
+
+julia> ligand_genes
+Dict{Any, Any} with 4 entries:
+  "Group 2" => 23:26
+  "Group 3" => 38:41
+  "Group 1" => 8:11
+  "Group 4" => 53:56
+
+julia> # Initial beta matrix after first boosting
+julia> # Genes that are selected for boosting in each cell group:
+
+julia> findall(x->x!=0, B[:,1:4])
+18-element Vector{CartesianIndex{2}}:
+ CartesianIndex(46, 1)
+ CartesianIndex(51, 1)
+ CartesianIndex(52, 1)
+ CartesianIndex(56, 1)
+ CartesianIndex(46, 2)
+ CartesianIndex(47, 2)
+ CartesianIndex(50, 2)
+ CartesianIndex(51, 2)
+ CartesianIndex(52, 2)
+ CartesianIndex(60, 2)
+ CartesianIndex(46, 3)
+ CartesianIndex(48, 3)
+ CartesianIndex(49, 3)
+ CartesianIndex(52, 3)
+ CartesianIndex(54, 3)
+ CartesianIndex(46, 4)
+ CartesianIndex(51, 4)
+ CartesianIndex(56, 4)
+
+julia> findall(x->x!=0, B[:,5:8])
+18-element Vector{CartesianIndex{2}}:
+ CartesianIndex(1, 1)
+ CartesianIndex(2, 1)
+ CartesianIndex(4, 1)
+ CartesianIndex(22, 1)
+ CartesianIndex(2, 2)
+ CartesianIndex(4, 2)
+ CartesianIndex(6, 2)
+ CartesianIndex(7, 2)
+ CartesianIndex(38, 2)
+ CartesianIndex(2, 3)
+ CartesianIndex(4, 3)
+ CartesianIndex(9, 3)
+ CartesianIndex(33, 3)
+ CartesianIndex(2, 4)
+ CartesianIndex(4, 4)
+ CartesianIndex(5, 4)
+ CartesianIndex(11, 4)
+ CartesianIndex(12, 4)
+
+julia> findall(x->x!=0, B[:,9:12])
+15-element Vector{CartesianIndex{2}}:
+ CartesianIndex(18, 1)
+ CartesianIndex(20, 1)
+ CartesianIndex(21, 1)
+ CartesianIndex(22, 1)
+ CartesianIndex(18, 2)
+ CartesianIndex(20, 2)
+ CartesianIndex(21, 2)
+ CartesianIndex(16, 3)
+ CartesianIndex(21, 3)
+ CartesianIndex(22, 3)
+ CartesianIndex(38, 3)
+ CartesianIndex(67, 3)
+ CartesianIndex(16, 4)
+ CartesianIndex(18, 4)
+ CartesianIndex(21, 4)
+
+julia> findall(x->x!=0, B[:,13:16])
+15-element Vector{CartesianIndex{2}}:
+ CartesianIndex(31, 1)
+ CartesianIndex(32, 1)
+ CartesianIndex(34, 1)
+ CartesianIndex(40, 1)
+ CartesianIndex(31, 2)
+ CartesianIndex(33, 2)
+ CartesianIndex(36, 2)
+ CartesianIndex(51, 2)
+ CartesianIndex(32, 3)
+ CartesianIndex(33, 3)
+ CartesianIndex(35, 3)
+ CartesianIndex(42, 3)
+ CartesianIndex(31, 4)
+ CartesianIndex(32, 4)
+ CartesianIndex(33, 4)
+
+julia> heatmap(B) ## see repository
+
+---------------------------------
+julia> # Results for first rematching
+
+julia> # Communication partners:
+
+julia> communication_idxs
+1000-element Vector{Int64}:
+ 470
+ 430
+ 462
+ 867
+ 458
+ 922
+ 355
+ 458
+ 462
+ 462
+   ⋮
+ 106
+  13
+ 358
+  38
+ 732
+  13
+  13
+  82
+  75
+
+julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
+201
+
+julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
+214
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+218
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+200
+
+julia> # Genes that are selected for boosting in each cell group:
+
+julia> findall(x->x!=0, B_iter[:,1:4])
+14-element Vector{CartesianIndex{2}}:
+ CartesianIndex(46, 1)
+ CartesianIndex(51, 1)
+ CartesianIndex(52, 1)
+ CartesianIndex(46, 2)
+ CartesianIndex(50, 2)
+ CartesianIndex(51, 2)
+ CartesianIndex(52, 2)
+ CartesianIndex(46, 3)
+ CartesianIndex(48, 3)
+ CartesianIndex(49, 3)
+ CartesianIndex(52, 3)
+ CartesianIndex(46, 4)
+ CartesianIndex(51, 4)
+ CartesianIndex(52, 4)
+
+julia> findall(x->x!=0, B_iter[:,5:8])
+11-element Vector{CartesianIndex{2}}:
+ CartesianIndex(1, 1)
+ CartesianIndex(2, 1)
+ CartesianIndex(4, 1)
+ CartesianIndex(2, 2)
+ CartesianIndex(4, 2)
+ CartesianIndex(6, 2)
+ CartesianIndex(2, 3)
+ CartesianIndex(4, 3)
+ CartesianIndex(2, 4)
+ CartesianIndex(4, 4)
+ CartesianIndex(5, 4)
+
+julia> findall(x->x!=0, B_iter[:,9:12])
+13-element Vector{CartesianIndex{2}}:
+ CartesianIndex(18, 1)
+ CartesianIndex(20, 1)
+ CartesianIndex(21, 1)
+ CartesianIndex(22, 1)
+ CartesianIndex(20, 2)
+ CartesianIndex(21, 2)
+ CartesianIndex(16, 3)
+ CartesianIndex(20, 3)
+ CartesianIndex(21, 3)
+ CartesianIndex(22, 3)
+ CartesianIndex(16, 4)
+ CartesianIndex(18, 4)
+ CartesianIndex(21, 4)
+
+julia> findall(x->x!=0, B_iter[:,13:16])
+11-element Vector{CartesianIndex{2}}:
+ CartesianIndex(31, 1)
+ CartesianIndex(32, 1)
+ CartesianIndex(34, 1)
+ CartesianIndex(31, 2)
+ CartesianIndex(33, 2)
+ CartesianIndex(32, 3)
+ CartesianIndex(33, 3)
+ CartesianIndex(35, 3)
+ CartesianIndex(42, 3)
+ CartesianIndex(31, 4)
+ CartesianIndex(32, 4)
+
+julia> heatmap(B_iter)
+
+------------------------------
+julia> # Results for five iterations of rematching
+
+julia> # Communication partners:
+
+julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
+197
+
+julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
+186
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+204
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+181
+
+julia> # Beta matrix after five iterations of rematching
+
+julia> # Genes that are selected for boosting in each cell group:
+
+julia> findall(x->x!=0, B_iter[:,1:4])
+10-element Vector{CartesianIndex{2}}:
+ CartesianIndex(51, 1)
+ CartesianIndex(52, 1)
+ CartesianIndex(46, 2)
+ CartesianIndex(51, 2)
+ CartesianIndex(52, 2)
+ CartesianIndex(46, 3)
+ CartesianIndex(52, 3)
+ CartesianIndex(46, 4)
+ CartesianIndex(51, 4)
+ CartesianIndex(52, 4)
+
+julia> findall(x->x!=0, B_iter[:,5:8])
+9-element Vector{CartesianIndex{2}}:
+ CartesianIndex(1, 1)
+ CartesianIndex(4, 1)
+ CartesianIndex(2, 2)
+ CartesianIndex(4, 2)
+ CartesianIndex(6, 2)
+ CartesianIndex(2, 3)
+ CartesianIndex(4, 3)
+ CartesianIndex(4, 4)
+ CartesianIndex(5, 4)
+
+julia> findall(x->x!=0, B_iter[:,9:12])
+10-element Vector{CartesianIndex{2}}:
+ CartesianIndex(16, 1)
+ CartesianIndex(20, 1)
+ CartesianIndex(21, 1)
+ CartesianIndex(22, 1)
+ CartesianIndex(20, 2)
+ CartesianIndex(20, 3)
+ CartesianIndex(21, 3)
+ CartesianIndex(22, 3)
+ CartesianIndex(16, 4)
+ CartesianIndex(21, 4)
+
+julia> findall(x->x!=0, B_iter[:,13:16])
+8-element Vector{CartesianIndex{2}}:
+ CartesianIndex(31, 1)
+ CartesianIndex(32, 1)
+ CartesianIndex(31, 2)
+ CartesianIndex(33, 2)
+ CartesianIndex(31, 3)
+ CartesianIndex(32, 3)
+ CartesianIndex(31, 4)
+ CartesianIndex(32, 4)
+
+julia> heatmap(B_iter)
+
+-------------------------
+julia> # Results for ten iterations of rematching
+
+julia> # Communication partners:
+
+julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
+193
+
+julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
+183
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+190
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+175
+
+julia> # Beta matrix after ten iterations of rematching
+
+julia> # Genes that are selected for boosting in each cell group:
+
+julia> findall(x->x!=0, B_iter[:,1:4])
+8-element Vector{CartesianIndex{2}}:
+ CartesianIndex(51, 1)
+ CartesianIndex(52, 1)
+ CartesianIndex(46, 2)
+ CartesianIndex(52, 2)
+ CartesianIndex(51, 3)
+ CartesianIndex(52, 3)
+ CartesianIndex(46, 4)
+ CartesianIndex(52, 4)
+
+julia> findall(x->x!=0, B_iter[:,5:8])
+8-element Vector{CartesianIndex{2}}:
+ CartesianIndex(1, 1)
+ CartesianIndex(4, 1)
+ CartesianIndex(2, 2)
+ CartesianIndex(4, 2)
+ CartesianIndex(6, 2)
+ CartesianIndex(4, 3)
+ CartesianIndex(4, 4)
+ CartesianIndex(5, 4)
+
+julia> findall(x->x!=0, B_iter[:,9:12])
+7-element Vector{CartesianIndex{2}}:
+ CartesianIndex(16, 1)
+ CartesianIndex(20, 1)
+ CartesianIndex(21, 1)
+ CartesianIndex(20, 2)
+ CartesianIndex(20, 3)
+ CartesianIndex(22, 3)
+ CartesianIndex(21, 4)
+
+julia> findall(x->x!=0, B_iter[:,13:16])
+5-element Vector{CartesianIndex{2}}:
+ CartesianIndex(31, 1)
+ CartesianIndex(31, 2)
+ CartesianIndex(31, 3)
+ CartesianIndex(32, 3)
+ CartesianIndex(31, 4)
+
+julia> heatmap(B_iter)
+
+---------------------------
+julia> # Results for 20  iterations of rematching
+
+julia> # Communication partners:
+
+julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
+205
+
+julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
+182
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+194
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+178
+
+julia> # Beta matrix after 20 iterations of rematching
+
+julia> # Genes that are selected for boosting in each cell group:
+
+julia> findall(x->x!=0, B_iter[:,1:4])
+5-element Vector{CartesianIndex{2}}:
+ CartesianIndex(51, 1)
+ CartesianIndex(52, 1)
+ CartesianIndex(52, 2)
+ CartesianIndex(52, 3)
+ CartesianIndex(52, 4)
+
+julia> findall(x->x!=0, B_iter[:,5:8])
+7-element Vector{CartesianIndex{2}}:
+ CartesianIndex(1, 1)
+ CartesianIndex(4, 1)
+ CartesianIndex(4, 2)
+ CartesianIndex(6, 2)
+ CartesianIndex(4, 3)
+ CartesianIndex(4, 4)
+ CartesianIndex(5, 4)
+
+julia> findall(x->x!=0, B_iter[:,9:12])
+6-element Vector{CartesianIndex{2}}:
+ CartesianIndex(20, 1)
+ CartesianIndex(21, 1)
+ CartesianIndex(20, 2)
+ CartesianIndex(20, 3)
+ CartesianIndex(22, 3)
+ CartesianIndex(21, 4)
+
+julia> findall(x->x!=0, B_iter[:,13:16])
+5-element Vector{CartesianIndex{2}}:
+ CartesianIndex(31, 1)
+ CartesianIndex(31, 2)
+ CartesianIndex(31, 3)
+ CartesianIndex(32, 3)
+ CartesianIndex(31, 4)
+
+julia> heatmap(B_iter)
+
+------------------------
+julia> # Results for 50 iterations of rematching
+
+julia> # Communication partners:
+
+julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
+205
+
+julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
+182
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+194
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+178
+
+julia> # Beta matrix after 50 iterations of rematching
+
+julia> # Genes that are selected for boosting in each cell group:
+
+julia> findall(x->x!=0, B_iter[:,1:4])
+5-element Vector{CartesianIndex{2}}:
+ CartesianIndex(51, 1)
+ CartesianIndex(52, 1)
+ CartesianIndex(52, 2)
+ CartesianIndex(52, 3)
+ CartesianIndex(52, 4)
+
+julia> findall(x->x!=0, B_iter[:,5:8])
+7-element Vector{CartesianIndex{2}}:
+ CartesianIndex(1, 1)
+ CartesianIndex(4, 1)
+ CartesianIndex(4, 2)
+ CartesianIndex(6, 2)
+ CartesianIndex(4, 3)
+ CartesianIndex(4, 4)
+ CartesianIndex(5, 4)
+
+julia> findall(x->x!=0, B_iter[:,9:12])
+6-element Vector{CartesianIndex{2}}:
+ CartesianIndex(20, 1)
+ CartesianIndex(21, 1)
+ CartesianIndex(20, 2)
+ CartesianIndex(20, 3)
+ CartesianIndex(22, 3)
+ CartesianIndex(21, 4)
+
+julia> findall(x->x!=0, B_iter[:,13:16])
+5-element Vector{CartesianIndex{2}}:
+ CartesianIndex(31, 1)
+ CartesianIndex(31, 2)
+ CartesianIndex(31, 3)
+ CartesianIndex(32, 3)
+ CartesianIndex(31, 4)
+
+julia> heatmap(B_iter)
