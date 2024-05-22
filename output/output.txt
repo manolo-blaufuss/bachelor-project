@@ -1,5 +1,18 @@
 julia> # Example results using 7 boosting steps, boosting width 0.2
 
+# Communication distribution after initial matching (before first boosting)
+count(x -> 251 <= x <= 500, communication_idxs[1:250])
+205
+
+count(x -> 501 <= x <= 750, communication_idxs[251:500])
+198
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+203
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+199
+
 julia> #Ligand genes:
 
 julia> ligand_genes
