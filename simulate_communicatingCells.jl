@@ -40,11 +40,11 @@ Simulates the expression levels of genes in interacting single cells.
 - ###`communications::Dict{String, DataFrame}`: The pairwise communication dataframes between cell groups. Each dataframe contains the sender, receiver, and geometric mean of the ligand and receptor genes.
 """
 function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60, n_groups::Int = 4;
-        dropout_rate::Real = 0.2,
+        dropout_rate::Real = 0.1,
         HEG_mean::Real = 10,
-        HEG_sd::Real = 3,
+        HEG_sd::Real = 2,
         communication_mean::Real = 10,
-        communication_sd::Real = 3,
+        communication_sd::Real = 1,
         technical_noise_mean::Real = 0,
         technical_noise_sd::Real = 4,
         n_noise_genes::Int = 10,
@@ -125,7 +125,7 @@ function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60
 
         #for the cells belonging to the cell group, randomly select half of them to express the ligand
         cell_indices = findall(x -> x == cell_group, cell_group_assignments)
-        num_cells_per_group = length(cell_indices) ÷ 3  # Third the cells per group
+        num_cells_per_group = length(cell_indices) #÷ 3  # Third the cells per group
         selected_cells = sample(cell_indices, num_cells_per_group, replace=false)
         dataset[selected_cells, comm_genes] .= rand(Normal(communication_mean, communication_sd), size(dataset[selected_cells, comm_genes]))
     end
@@ -149,7 +149,7 @@ function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60
 
             #for the cells belonging to the cell group, randomly select half of them to express the ligand
             cell_indices = findall(x -> x == cell_group, cell_group_assignments)
-            num_cells_per_group = length(cell_indices) ÷ 3  # Third the cells per group
+            num_cells_per_group = length(cell_indices) #÷ 3  # Third the cells per group
             selected_cells = sample(cell_indices, num_cells_per_group, replace=false)
             dataset[selected_cells, comm_genes] .= rand(Normal(communication_mean, communication_sd), size(dataset[selected_cells, comm_genes]))
         else

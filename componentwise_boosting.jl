@@ -87,10 +87,7 @@ Compute the OLLS-estimator for each component of the design matrix for each comm
 # Returns
 - `beta_matrix::Matrix`: A matrix of size (p x q) where p is the number of predictors and q is the number of responses. It contains the OLLS-estimator for each component of the design matrix for each communication.
 """
-function get_beta_matrix(regression_data::Tuple{Any, Any})
-    ϵ = 0.2 #learning rate (step width) for the boosting
-    M = 7 #number of boosting steps
-
+function get_beta_matrix(regression_data::Tuple{Any, Any}; ϵ = 0.2, M = 7)
     X = regression_data[1]
     Y = regression_data[2]
     beta_matrix = zeros(size(X, 2), size(Y, 2))
