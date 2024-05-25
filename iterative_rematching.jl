@@ -1,4 +1,24 @@
-function iterative_rematching(n, X, B, dataset, cell_group_assignments, n_cells, n_cells_per_group, receptor_idxs)
+"""
+    iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{Float32}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_cells_per_group::Int, receptor_idxs::Vector{Float32})
+
+Perform iterative rematching for communication between cells.
+
+# Arguments
+- `n::Int`: Number of iterations.
+- `X::Matrix{Float32}`: Design matrix.
+- `B::Matrix{Float32}`: Beta matrix.
+- `dataset::Matrix{Float32}`: The input dataset.
+- `cell_group_assignments::Vector{String}`: The cell group assignments.
+- `n_cells::Int`: The number of cells.
+- `n_cells_per_group::Int`: The number of cells per group.
+- `receptor_idxs::Vector{Float32}`: The indices of the receptor genes.
+
+# Returns
+- `B::Matrix{Float32}`: The updated beta matrix.
+- `Y::Matrix{Float32}`: The response matrix Y.
+- `communication_idxs::Vector{Int}`: The indices of the communication partners.
+"""
+function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{Float32}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_cells_per_group::Int, receptor_idxs::Vector{Float32})
     Y = zeros(n_cells, length(receptor_idxs))
     communication_idxs = zeros(Int, n_cells)
     for iter in 1:n
