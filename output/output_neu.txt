@@ -1,0 +1,153 @@
+julia> # Example results using 7 boosting steps, boosting width 0.2
+
+# Communication distribution after initial matching (before first boosting)
+count(x -> 251 <= x <= 500, communication_idxs[1:250])
+196
+
+count(x -> 501 <= x <= 750, communication_idxs[251:500])
+201
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+206
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+207
+
+### communication_pairs_orig.svg
+
+julia> #Ligand genes:
+
+julia> ligand_genes
+Dict{Any, Any} with 4 entries:
+  "Group 2" => 23:26
+  "Group 3" => 38:41
+  "Group 1" => 8:11
+  "Group 4" => 53:56
+
+julia> # Initial beta matrix after first boosting
+
+### beta.svg
+
+---------------------------
+
+julia> # Results for first rematching
+
+julia> # Communication partners:
+
+julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
+250
+
+julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
+250
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+250
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+250
+
+### communication_pairs_1.svg
+
+julia> # Beta matrix after first iteration of rematching
+
+### beta_1.svg
+
+-----------------------
+
+julia> # Results for five iterations of rematching
+
+julia> # Communication partners:
+
+julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
+250
+
+julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
+250
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+249
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+250
+
+### communication_pairs_5.svg
+
+julia> # Beta matrix after five iterations of rematching
+
+### beta_5.svg
+
+------------------
+
+julia> # Results for ten iterations of rematching
+
+julia> # Communication partners:
+
+julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
+250
+
+julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
+250
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+249
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+250
+
+### communication_pairs_10.svg
+
+julia> # Beta matrix after ten iterations of rematching
+
+### beta_10.svg
+
+-------------------------
+
+julia> # Results for twenty iterations of rematching
+
+julia> # Communication partners:
+
+julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
+250
+
+julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
+250
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+249
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+250
+
+### communication_pairs_20.svg
+
+julia> # Beta matrix after twenty iterations of rematching
+
+### beta_20.svg
+
+----------------------
+
+julia> # Results for fifty iterations of rematching
+
+julia> # Communication partners:
+
+julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
+250
+
+julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
+250
+
+julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
+249
+
+julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+250
+
+### communication_pairs_50.svg
+
+julia> # Beta matrix after fifty iterations of rematching
+
+### beta_50.svg
+
+--------------------
+
+### Konvergenz zwischen der 50. und 100. Iteration
