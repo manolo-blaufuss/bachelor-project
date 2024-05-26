@@ -1,5 +1,9 @@
 julia> # Example results using 7 boosting steps, boosting width 0.2
 
+# Gene expression using modified simulation design:
+
+### gene_expression.svg
+
 # Communication distribution after initial matching (before first boosting)
 count(x -> 251 <= x <= 500, communication_idxs[1:250])
 196
