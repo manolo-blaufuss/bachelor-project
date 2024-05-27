@@ -6,16 +6,44 @@ julia> # Example results using 7 boosting steps, boosting width 0.2
 
 # Communication distribution after initial matching (before first boosting)
 count(x -> 251 <= x <= 500, communication_idxs[1:250])
-196
+70%: 196
+60%: 179
+50%: 164
+40%: 148
+30%: 129
+20%: 113
+10%: 92
+0%: 77
 
 count(x -> 501 <= x <= 750, communication_idxs[251:500])
-201
+70%: 201
+60%: 177
+50%: 163
+40%: 146
+30%: 134
+20%: 121
+10%: 102
+0%: 90
 
 julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
-206
+70%: 206
+60%: 181
+50%: 167
+40%: 154
+30%: 127
+20%: 107
+10%: 96
+0%: 89
 
 julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
-207
+70%: 207
+60%: 174
+50%: 170
+40%: 154
+30%: 126
+20%: 107
+10%: 100
+0%: 81
 
 ### communication_pairs_orig.svg
 
@@ -39,16 +67,44 @@ julia> # Results for first rematching
 julia> # Communication partners:
 
 julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
-250
+70%: 250
+60%: 250
+50%: 249
+40%: 250
+30%: 243
+20%: 203
+10%: 119
+0%: 57
 
 julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
 250
+250
+250
+250
+246
+233
+176
+122
 
 julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
 250
+250
+250
+250
+247
+219
+117
+114
 
 julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
 250
+249
+249
+250
+247
+187
+94
+21
 
 ### communication_pairs_1.svg
 
@@ -63,16 +119,44 @@ julia> # Results for five iterations of rematching
 julia> # Communication partners:
 
 julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
-250
+70%: 250
+60%: 250
+50%: 250
+40%: 250
+30%: 250
+20%: 250
+10%: 244
+0%: 21
 
 julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
 250
+250
+250
+250
+248
+248
+244
+225
 
 julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
 249
+250
+250
+250
+249
+231
+236
+166
 
 julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
 250
+250
+250
+250
+248
+249
+241
+9
 
 ### communication_pairs_5.svg
 
@@ -87,16 +171,44 @@ julia> # Results for ten iterations of rematching
 julia> # Communication partners:
 
 julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
-250
+70%: 250
+60%: 250
+50%: 250
+40%: 250
+30%: 250
+20%: 250
+10%: 248
+0%: 6
 
 julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
 250
+250
+250
+250
+248
+248
+247
+225
 
 julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
 249
+249
+250
+249
+249
+232
+237
+29
 
 julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
 250
+250
+250
+250
+248
+250
+250
+16
 
 ### communication_pairs_10.svg
 
@@ -111,16 +223,44 @@ julia> # Results for twenty iterations of rematching
 julia> # Communication partners:
 
 julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
-250
+70%: 250
+60%: 250
+50%: 250
+40%: 250
+30%: 250
+20%: 250
+10%: 248
+0%: 6
 
 julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
 250
+250
+250
+250
+248
+248
+249
+225
 
 julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
 249
+249
+250
+249
+249
+231
+237
+0
 
 julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
 250
+250
+250
+250
+248
+250
+250
+4
 
 ### communication_pairs_20.svg
 
@@ -135,16 +275,44 @@ julia> # Results for fifty iterations of rematching
 julia> # Communication partners:
 
 julia> count(x -> 251 <= x <= 500, communication_idxs[1:250])
-250
+70%: 250
+60%: 250
+50%: 250
+40%: 250
+30%: 250
+20%: 250
+10%: 248
+0%: 6
 
 julia> count(x -> 501 <= x <= 750, communication_idxs[251:500])
 250
+250
+250
+250
+248
+248
+249
+225
 
 julia> count(x -> 751 <= x <= 1000, communication_idxs[501:750])
 249
+249
+250
+249
+249
+231
+237
+0
 
 julia> count(x -> 1 <= x <= 250, communication_idxs[751:1000])
 250
+250
+250
+250
+248
+250
+250
+4
 
 ### communication_pairs_50.svg
 
@@ -154,4 +322,11 @@ julia> # Beta matrix after fifty iterations of rematching
 
 --------------------
 
-### Konvergenz zwischen der 50. und 100. Iteration
+70%: Konvergenz zwischen der 20. und 50. Iteration
+60%: Konvergenz zwischen der 10. und 20. Iteration
+50%: Konvergenz zwischen der 20. und 40. Iteration
+40%: Konvergenz zwischen der 10. und 20. Iteration
+30%: Konvergenz zwischen der 10. und 20. Iteration
+20%: Konvergenz zwischen der 20. und 40. Iteration
+10%: Konvergenz zwischen der 10. und 20. Iteration
+0%: Konvergenz zwischen der 10. und 20. Iteration, aber falsche Zuordnung
