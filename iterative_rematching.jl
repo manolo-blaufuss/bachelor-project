@@ -1,5 +1,5 @@
 """
-    iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_cells_per_group::Int, gene_idxs::Vector{Int})
+    iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_groups::Int, n_cells_per_group::Int, gene_idxs::Vector{Int})
 
 Perform iterative rematching for communication between cells.
 
@@ -10,6 +10,7 @@ Perform iterative rematching for communication between cells.
 - `dataset::Matrix{Float32}`: The input dataset.
 - `cell_group_assignments::Vector{String}`: The cell group assignments.
 - `n_cells::Int`: The number of cells.
+- `n_groups::Int`: The number of groups.
 - `n_cells_per_group::Int`: The number of cells per group.
 - `gene_idxs::Vector{Int}`: The indices of the genes to be considered.
 
@@ -17,8 +18,9 @@ Perform iterative rematching for communication between cells.
 - `B::Matrix{Float32}`: The updated beta matrix.
 - `Y::Matrix{Float32}`: The response matrix Y.
 - `communication_idxs::Vector{Int}`: The indices of the communication partners.
+- `matching_coefficients::Dict`: The matching coefficients.
 """
-function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_cells_per_group::Int, gene_idxs::Vector{Int})
+function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_groups::Int, n_cells_per_group::Int, gene_idxs::Vector{Int})
     Y = zeros(n_cells, length(receptor_idxs))
     communication_idxs = zeros(Int, n_cells)
     for iter in 1:n
@@ -48,5 +50,23 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::
         # Perform componentwise boosting using X and y from regression_data:
         B = get_beta_matrix((X, Y))
     end
-    return B, Y, communication_idxs
+    # Get coefficients that measure how many cells are matched correctly:
+    communication_pairs = []
+    for i in 1:n_groups
+        for j in 1:n_groups
+            if communication_graph[i, j] == 1
+                push!(communication_pairs, (i, j))
+            end
+        end
+    end
+
+    matching_coefficients = Dict()
+    for pair in communication_pairs
+        sender_start_idx = (pair[1] - 1) * n_cells_per_group + 1
+        sender_end_idx = sender_start_idx + n_cells_per_group - 1
+        receiver_start_idx = (pair[2] - 1) * n_cells_per_group + 1
+        receiver_end_idx = receiver_start_idx + n_cells_per_group - 1
+        matching_coefficients[pair] = count(x -> receiver_start_idx <= x <= receiver_end_idx, communication_idxs[sender_start_idx:sender_end_idx]) / 250
+    end
+    return B, Y, communication_idxs, matching_coefficients
 end
