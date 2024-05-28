@@ -37,5 +37,5 @@ B = get_beta_matrix(regression_data)
 
 # Perform iterative rematching:
 X = regression_data[1]
-n = 1
-B_iter, Y_iter, communication_idxs = iterative_rematching(n, X, B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, gene_idxs)
+n = 20
+B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, gene_idxs)

@@ -1,0 +1,117 @@
+# Example results using 7 boosting steps, boosting width 0.2
+
+# Gene expression using modified simulation design:
+
+### gene_expression.svg
+
+---------------
+
+# Results for 70% correct initial matchings:
+
+# Initial beta matrix after first boosting
+### beta.svg
+
+# 0, 1, 5, 10, 20 iterations:
+
+1 -> 2: 0.7 - 1.0 - 1.0 - 1.0 - 1.0
+2 -> 3: 0.7 - 1.0 - 1.0 - 1.0 - 1.0
+3 -> 4: 0.7 - 1.0 - 1.0 - 1.0 - 1.0
+4 -> 1: 0.7 - 1.0 - 1.0 - 1.0 - 1.0
+
+-------------------
+
+# Results for 60% correct initial matchings:
+
+# Initial beta matrix after first boosting
+### beta.svg
+
+# 0, 1, 5, 10, 20 iterations:
+
+1 -> 2: 0.6 - 1.0 - 1.0 - 1.0 - 1.0
+2 -> 3: 0.6 - 1.0 - 1.0 - 1.0 - 1.0
+3 -> 4: 0.6 - 1.0 - 1.0 - 1.0 - 1.0
+4 -> 1: 0.6 - 0.988 - 1.0 - 1.0 - 1.0
+
+-----------------
+
+# Results for 50% correct initial matchings:
+
+# Initial beta matrix after first boosting
+### beta.svg
+
+# 0, 1, 5, 10, 20 iterations:
+
+1 -> 2: 0.5 - 0.956 - 1.0 - 1.0 - 1.0
+2 -> 3: 0.5 - 0.992 - 1.0 - 1.0 - 1.0
+3 -> 4: 0.5 - 0.992 - 1.0 - 1.0 - 1.0
+4 -> 1: 0.5 - 0.996 - 1.0 - 1.0 - 1.0
+
+-----------------
+
+# Results for 40% correct initial matchings:
+
+# Initial beta matrix after first boosting
+### beta.svg
+
+# 0, 1, 5, 10, 20 iterations:
+
+1 -> 2: 0.4 - 0.596 - 1.0 - 1.0 - 1.0
+2 -> 3: 0.4 - 0.816 - 1.0 - 1.0 - 1.0
+3 -> 4: 0.4 - 0.836 - 1.0 - 1.0 - 1.0
+4 -> 1: 0.4 - 0.744 - 1.0 - 1.0 - 1.0
+
+-----------------
+
+# Results for 35% correct initial matchings:
+
+# Initial beta matrix after first boosting
+### beta.svg
+
+# 0, 1, 5, 10, 20 iterations:
+
+1 -> 2: 0.35 - 0.296 - 0.008 - 0.008 - 0.008
+2 -> 3: 0.35 - 0.328 - 0.82 - 0.836 - 0.836
+3 -> 4: 0.35 - 0.444 - 0.984 - 0.996 - 0.996
+4 -> 1: 0.35 - 0.444 - 0.984 - 0.996 - 0.996
+
+-----------------
+
+# Results for 30% correct initial matchings:
+
+# Initial beta matrix after first boosting
+### beta.svg
+
+# 0, 1, 5, 10, 20 iterations:
+
+1 -> 2: 0.3 - 0.284 - 0.928 - 0.936 - 1.0
+2 -> 3: 0.3 - 0.2 - 0.0 - 0.0 - 0.0
+3 -> 4: 0.3 - 0.396 - 0.764 - 0.612 - 0.0
+4 -> 1: 0.3 - 0.252 - 0.0 - 0.0 - 0.0
+
+-----------------
+
+# Results for 25% correct initial matchings:
+
+# Initial beta matrix after first boosting
+### beta.svg
+
+# 0, 1, 5, 10, 20 iterations:
+
+1 -> 2: 0.25 - 0.076 - 0.012 - 0.0 - 0.0
+2 -> 3: 0.25 - 0.228 - 0.984 - 1.0 - 1.0
+3 -> 4: 0.25 - 0.14 - 0.0 - 0.0 - 0.0
+4 -> 1: 0.25 - 0.096 - 0.0 - 0.004 - 0.004
+
+-----------------
+
+# Results for 20% correct initial matchings:
+
+# Initial beta matrix after first boosting
+### beta.svg
+
+# 0, 1, 5, 10, 20 iterations:
+
+1 -> 2: 0.2 - 0.032 - 0.0 - 0.0 - 0.0
+2 -> 3: 0.2 - 0.056 - 0.0 - 0.0 - 0.0
+3 -> 4: 0.2 - 0.036 - 0.0 - 0.0 - 0.0
+4 -> 1: 0.2 - 0.012 - 0.0 - 0.0 - 0.004
