@@ -94,13 +94,13 @@ function assign_communication_partners(n_cells::Int, n_groups::Int, communicatio
     return communication_idxs
 end
 """
-    extract_regression_data(dataset::Matrix{Float32}, receptor_idxs::Vector{Any}, n_cells::Int, n_groups::Int)
+    extract_regression_data(dataset::Matrix{Float32}, gene_idxs::Vector{Int}, n_cells::Int, n_groups::Int)
 
 Extract the regression data for componentwise boosting.
 
 # Arguments
 - `dataset::Matrix{Float32}`: The input dataset.
-- `receptor_idxs::Vector{Any}`: The dictionary containing the receptor genes for each group.
+- `gene_idxs::Vector{Int}`: List containing the indices of the genes to be considered.
 - `n_cells::Int`: The number of cells.
 - `n_groups::Int`: The number of groups.
 
@@ -108,7 +108,7 @@ Extract the regression data for componentwise boosting.
 - `X::Matrix{Float32}`: The standardized design matrix X.
 - `Y::Matrix{Float32}`: The response matrix Y.
 """
-function extract_regression_data(dataset::Matrix{Float32}, receptor_idxs::Vector{Any}, n_cells::Int, n_groups::Int)
+function extract_regression_data(dataset::Matrix{Float32}, gene_idxs::Vector{Int}, n_cells::Int, n_groups::Int)
     # Get communication pairs:
     communication_pairs = []
     for i in 1:n_groups
@@ -126,9 +126,9 @@ function extract_regression_data(dataset::Matrix{Float32}, receptor_idxs::Vector
     X = standardize(dataset)
 
     # Get Matrix containing y for each receptor gene:
-    Y = zeros(n_cells, length(receptor_idxs))
-    for i in 1:length(receptor_idxs)
-        Y[:, i] = get_y(dataset, receptor_idxs[i], communication_idxs)
+    Y = zeros(n_cells, length(gene_idxs))
+    for i in 1:length(gene_idxs)
+        Y[:, i] = get_y(dataset, gene_idxs[i], communication_idxs)
     end
 
     return X, Y

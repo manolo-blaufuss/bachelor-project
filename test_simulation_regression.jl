@@ -13,6 +13,7 @@ communication_graph = [0 1 0 0; 0 0 1 0; 0 0 0 1; 1 0 0 0];
 # Note: This is just an example.
 n_cells = 1000
 n_genes = 60
+n_noise_genes = 10
 n_groups = 4
 n_cells_per_group = n_cells ÷ n_groups
 
@@ -27,12 +28,14 @@ for group in keys(receptor_genes)
 end
 receptor_idxs = sort(receptor_idxs)
 
-regression_data = extract_regression_data(dataset, receptor_idxs, n_cells, n_groups)
+gene_idxs = [1:n_genes+n_noise_genes;]
+
+regression_data = extract_regression_data(dataset, gene_idxs, n_cells, n_groups)
 
 # Perform componentwise boosting using X and y from regression_data:
 B = get_beta_matrix(regression_data)
 
 # Perform iterative rematching:
 X = regression_data[1]
-n = 5
-B_iter, Y_iter, communication_idxs = iterative_rematching(n, X, B, dataset, cell_group_assignments, n_cells, n_cells_per_group, receptor_idxs)
+n = 1
+B_iter, Y_iter, communication_idxs = iterative_rematching(n, X, B, dataset, cell_group_assignments, n_cells, n_cells_per_group, gene_idxs)
