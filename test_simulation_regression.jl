@@ -1,3 +1,9 @@
+using Pkg;
+
+Pkg.activate(".");
+Pkg.instantiate();
+Pkg.status()
+
 using Distributions, Plots, Random, StatsBase, DataFrames, LinearAlgebra
 
 include("simulate_communicatingCells.jl")
