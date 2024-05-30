@@ -28,19 +28,27 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::
         communication_idxs = zeros(Int, n_cells)
         for i in 1:n_cells
             expression_R = R[i, :]
-            sender_group = parse(Int, cell_group_assignments[i][7])
-            sender_start_idx = (sender_group - 1) * n_cells_per_group + 1
-            sender_end_idx = sender_start_idx + n_cells_per_group - 1
-            sample_idxs = setdiff(1:n_cells, sender_start_idx:sender_end_idx)
-            distances = zeros(Int, n_cells) .+ Inf
-            for j in sample_idxs
+            #sender_group = parse(Int, cell_group_assignments[i][7])
+            #sender_start_idx = (sender_group - 1) * n_cells_per_group + 1
+            #sender_end_idx = sender_start_idx + n_cells_per_group - 1
+            # sample_idxs = setdiff(1:n_cells, sender_start_idx:sender_end_idx)
+            cosine_similarities = zeros(n_cells)
+            for j in 1:n_cells
                 expression_X = X[j, gene_idxs]
                 cosine_sim = dot(expression_X, expression_R) / (norm(expression_X) * norm(expression_R))
-                distances[j] = 1 - cosine_sim
+                cosine_similarities[j] = cosine_sim
             end
-            min_val = findmin(distances)[1]
-            min_val_indices = findall(x -> x == min_val, distances)
-            communication_idxs[i] = rand(min_val_indices)
+            sorted_sims = sort(cosine_similarities)
+            sim_distances = diff(sorted_sims)
+            max_distance = findmax(sim_distances)[1]
+            max_similarity = sorted_sims[n_cells]
+            similarity_threshold = max_similarity - 0.2 * max_distance
+            sel_indices = findall(x -> x >= similarity_threshold, cosine_similarities)
+            communication_idxs[i] = rand(sel_indices)
+
+            if i in [100, 350] && iter == n
+                plot_similarity(cosine_similarities, sorted_sims, i, iter)
+            end
         end
         # Get Matrix containing y for each receptor gene:
         Y = zeros(n_cells, length(gene_idxs))
@@ -69,4 +77,11 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::
         matching_coefficients[pair] = count(x -> receiver_start_idx <= x <= receiver_end_idx, communication_idxs[sender_start_idx:sender_end_idx]) / 250
     end
     return B, Y, communication_idxs, matching_coefficients
+end
+
+function plot_similarity(sims, sorted_sims, cell_number, iter)
+    p = plot(sims, title = "Cosine sims cell " * string(cell_number) * " iter " * string(iter), label = "Similarity", xaxis = "Index", yaxis = "Similarity")
+    display(p)
+    q = plot(sorted_sims, title = "Sorted cosine sims cell " * string(cell_number) * " iter " * string(iter), label = "Similarity", xaxis = "Index", yaxis = "Similarity")
+    display(q)
 end
