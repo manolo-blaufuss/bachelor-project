@@ -67,11 +67,11 @@ function assign_communication_partners(n_cells::Int, n_groups::Int, communicatio
         sender_group = sel_communication[1]
         receiver_group = sel_communication[2]
         sender_start_idx = (sender_group - 1) * n_cells_per_group + 1
-        sender_end_idx = sender_start_idx + n_cells_per_group - 1
+        #sender_end_idx = sender_start_idx + n_cells_per_group - 1
         receiver_start_idx = (receiver_group - 1) * n_cells_per_group + 1
         receiver_end_idx = receiver_start_idx + n_cells_per_group - 1
-        sample_idxs = setdiff(1:n_cells, sender_start_idx:sender_end_idx)
-        sample_idxs = setdiff(sample_idxs, receiver_start_idx:receiver_end_idx)
+        #sample_idxs = setdiff(1:n_cells, sender_start_idx:sender_end_idx)
+        sample_idxs = setdiff(1:n_cells, receiver_start_idx:receiver_end_idx)
         for i in 0:n_cells_per_group-1
             if i < threshold
                 communication_idxs[sender_start_idx + i] = receiver_start_idx + i
