@@ -50,12 +50,12 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::
                 plot_similarity(cosine_similarities, sorted_sims, i, iter)
             end
         end
-        # Get Matrix containing y for each receptor gene:
+        # Get Matrix containing y for each gene:
         Y = zeros(n_cells, length(gene_idxs))
         for i in 1:length(gene_idxs)
             Y[:, i] = get_y(dataset, gene_idxs[i], communication_idxs)
         end
-        # Perform componentwise boosting using X and y from regression_data:
+        # Perform componentwise boosting using X and Y
         B = get_beta_matrix((X, Y))
     end
     # Get coefficients that measure how many cells are matched correctly:

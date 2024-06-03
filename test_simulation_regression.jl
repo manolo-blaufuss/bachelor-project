@@ -10,6 +10,7 @@ include("simulate_communicatingCells.jl")
 include("componentwise_boosting.jl")
 include("extract_regressionData.jl")
 include("iterative_rematching.jl")
+include("mse.jl")
 
 # Define which groups sends signals to which group in a binary communication graph/matrix (sender groups x receiver groups):
 # Note: This is just an example.
@@ -43,5 +44,7 @@ B = get_beta_matrix(regression_data)
 
 # Perform iterative rematching:
 X = regression_data[1]
-n = 5
+n = 20
 B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, gene_idxs)
+
+mse(X, regression_data[2], B, B_iter, "MSE orig. B", "MSE " * string(n) * " iterations")
