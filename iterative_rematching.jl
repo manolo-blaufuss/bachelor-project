@@ -42,11 +42,11 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::
             sim_distances = diff(sorted_sims)
             max_distance = findmax(sim_distances)[1]
             max_similarity = sorted_sims[n_cells]
-            similarity_threshold = max_similarity - 0.2 * max_distance
+            similarity_threshold = max_similarity - 0.3 * max_distance
             sel_indices = findall(x -> x >= similarity_threshold, cosine_similarities)
             communication_idxs[i] = rand(sel_indices)
 
-            if i in [101, 102] && iter == n
+            if i in [] && iter == n
                 plot_similarity(cosine_similarities, sorted_sims, i, iter)
             end
         end
