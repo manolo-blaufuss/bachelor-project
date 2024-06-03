@@ -46,7 +46,7 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::
             sel_indices = findall(x -> x >= similarity_threshold, cosine_similarities)
             communication_idxs[i] = rand(sel_indices)
 
-            if i in [100, 350] && iter == n
+            if i in [101, 102] && iter == n
                 plot_similarity(cosine_similarities, sorted_sims, i, iter)
             end
         end
