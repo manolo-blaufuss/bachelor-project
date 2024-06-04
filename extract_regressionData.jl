@@ -62,7 +62,7 @@ Assign communication partners for each cell.
 function assign_communication_partners(n_cells::Int, n_groups::Int, communication_pairs::Vector{Any})
     communication_idxs = zeros(Int, n_cells)
     n_cells_per_group = n_cells ÷ n_groups
-    threshold = round(Int, 0.7 * n_cells_per_group)
+    threshold = round(Int, 0.2 * n_cells_per_group)
     for sel_communication in communication_pairs
         sender_group = sel_communication[1]
         receiver_group = sel_communication[2]
