@@ -48,9 +48,3 @@ n = 20
 B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, gene_idxs)
 
 #mse(X, regression_data[2], B, Y_iter, B_iter, "MSE orig. B", "MSE " * string(n) * " iterations")
-
-comm_mat = zeros(1000,1000)
-for i in 1:1000
-    comm_mat[communication_idxs[i], i] = 1
-end
-heatmap(comm_mat)
