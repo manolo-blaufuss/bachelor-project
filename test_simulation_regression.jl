@@ -47,4 +47,4 @@ X = regression_data[1]
 n = 20
 B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, gene_idxs)
 
-mse(X, regression_data[2], B, B_iter, "MSE orig. B", "MSE " * string(n) * " iterations")
+mse(X, regression_data[2], B, Y_iter, B_iter, "MSE orig. B", "MSE " * string(n) * " iterations")
