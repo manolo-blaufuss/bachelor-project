@@ -77,7 +77,7 @@ function compL2Boost!(β::AbstractVector{<:AbstractFloat}, X::AbstractMatrix{<:A
 end
 
 """
-    get_beta_vectors(regression_data::Tuple{Any, Any})
+    get_beta_matrix(regression_data::Tuple{Any, Any})
 
 Compute the OLLS-estimator for each component of the design matrix for each communication.
 

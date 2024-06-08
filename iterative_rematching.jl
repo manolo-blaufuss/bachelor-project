@@ -21,7 +21,7 @@ Perform iterative rematching for communication between cells.
 - `matching_coefficients::Dict`: The matching coefficients.
 """
 function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_groups::Int, n_cells_per_group::Int, gene_idxs::Vector{Int})
-    Y = zeros(n_cells, length(receptor_idxs))
+    Y = zeros(n_cells, length(gene_idxs))
     communication_idxs = zeros(Int, n_cells)
     for iter in 1:n
         R = X * B
