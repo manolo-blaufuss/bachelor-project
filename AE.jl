@@ -1,10 +1,10 @@
 #--Hyperparameter:
 mutable struct Hyperparameter
-    zdim::Int
-    epochs::Int
-    batchsize::Int
-    η::Float32
-    λ::Float32
+    zdim::Int # number of latent dimensions
+    epochs::Int # number of training epochs
+    batchsize::Int # batchsize for training
+    η::Float32 # learning rate
+    λ::Float32 # weight decay parameter
 
     # Constructor with default values
     function Hyperparameter(; zdim::Int=10, epochs::Int=50, batchsize::Int=2^9, η::Float32=0.01f0, λ::Float32=0.1f0)
@@ -12,25 +12,14 @@ mutable struct Hyperparameter
     end 
 end
 
-mutable struct MetaData
-    obs_df::DataFrame
-    featurename::Union{Nothing, Vector{String}}
-    Top_features::Union{Nothing, Dict{String, DataFrame}}
-
-    # Constructor with default values
-    function MetaData(; obs_df::DataFrame=DataFrame(), featurename::Union{Nothing, Vector{String}}=nothing, Top_features::Union{Nothing, Dict{String, DataFrame}}=nothing)
-        new(obs_df, featurename, Top_features)
-    end 
-end
-
 #---AE architecture:
 mutable struct Autoencoder
-    encoder::Union{Chain, Dense}
-    decoder::Union{Chain, Dense}
-    HP::Hyperparameter
-    Z::Union{Nothing, Matrix{Float32}}
-    Z_cluster::Union{Nothing, Matrix{Float32}}
-    UMAP::Union{Nothing, Matrix{Float32}}
+    encoder::Union{Chain, Dense} # encoder architecture
+    decoder::Union{Chain, Dense} # decoder architecture
+    HP::Hyperparameter # hyperparameters
+    Z::Union{Nothing, Matrix{Float32}} # latent representation
+    Z_cluster::Union{Nothing, Matrix{Float32}} 
+    UMAP::Union{Nothing, Matrix{Float32}} 
 
     # Constructor to allow initializing Z as nothing
     function Autoencoder(; encoder::Union{Chain, Dense}, decoder::Union{Chain, Dense}, HP::Hyperparameter)
@@ -52,7 +41,7 @@ function Base.summary(AE::Autoencoder)
 end
 
 #---training function for a vanilla AE:
-function train_AE!(X::AbstractMatrix{<:AbstractFloat}, AE::Autoencoder; soft_clustering::Bool=false, MD::Union{Nothing, MetaData}=nothing, save_data::Bool=false, path::Union{Nothing, String}=nothing)
+function train_AE!(X::AbstractMatrix{<:AbstractFloat}, AE::Autoencoder)
 
     if eltype(X) != Float32
         @warn "Matrix elements are not of type Float32. This may slow down the optimization process."
@@ -86,17 +75,6 @@ function train_AE!(X::AbstractMatrix{<:AbstractFloat}, AE::Autoencoder; soft_clu
     end
 
     AE.Z = encoder(X)
-
-    if soft_clustering
-
-        AE.Z_cluster = softmax(split_vectors(AE.Z))
-        MD.obs_df[!, :Cluster] = [argmax(AE.Z_cluster[:, i]) for i in 1:size(AE.Z_cluster, 2)]
-
-        if !isnothing(MD.Top_features)
-            MD.Top_features = topFeatures_per_Cluster(AE; save_data=save_data, path=path)
-        end
-        
-    end
 
     return mean_trainlossPerEpoch
 end
