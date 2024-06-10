@@ -39,8 +39,10 @@ X = regression_data[1]'
 HP = Hyperparameter(zdim=latent_dim, epochs=20, batchsize=2^9, η=0.01f0, λ=0.1f0)
 
 # Define the encoder and decoder:
-encoder = Chain(Dense(size(X, 1), 64, tanh_fast), Dense(64, 32, tanh_fast), Dense(32, HP.zdim))
-decoder = Chain(Dense(HP.zdim, 32, tanh_fast), Dense(32, 64, tanh_fast), Dense(64, size(X, 1), identity))
+#encoder = Chain(Dense(size(X, 1), 64, tanh_fast), Dense(64, 32, tanh_fast), Dense(32, 16, tanh_fast), Dense(16, 8, tanh_fast), Dense(8, HP.zdim, tanh_fast))
+#decoder = Chain(Dense(HP.zdim, 8, tanh_fast), Dense(8, 16, tanh_fast), Dense(16, 32, tanh_fast), Dense(32, 64, tanh_fast), Dense(64, size(X, 1), tanh_fast), Dense(size(X, 1), size(X, 1)))
+encoder = Chain(Dense(size(X, 1), 32, tanh_fast), Dense(32, HP.zdim, tanh_fast))
+decoder = Chain(Dense(HP.zdim, 32, tanh_fast), Dense(32, size(X, 1), tanh_fast), Dense(size(X, 1), size(X, 1)))
 
 # Define the AE:
 AE = Autoencoder(;encoder, decoder, HP)
@@ -61,5 +63,5 @@ Y_reduced = regression_data_reduced[2]
 B = get_beta_matrix(regression_data_reduced)
 
 # Perform iterative rematching:
-n = 20
+n = 10
 B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, Z, B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, reduced_gene_idxs)

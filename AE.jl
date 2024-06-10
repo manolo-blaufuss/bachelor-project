@@ -14,8 +14,8 @@ end
 
 #---AE architecture:
 mutable struct Autoencoder
-    encoder::Union{Chain, Dense} # encoder architecture
-    decoder::Union{Chain, Dense} # decoder architecture
+    encoder::Union{Chain, Dense} # encoder
+    decoder::Union{Chain, Dense} # decoder
     HP::Hyperparameter # hyperparameters
     Z::Union{Nothing, Matrix{Float32}} # latent representation
     Z_cluster::Union{Nothing, Matrix{Float32}} 
@@ -29,18 +29,7 @@ end
 (AE::Autoencoder)(X) = AE.decoder(AE.encoder(X))
 Flux.@functor Autoencoder
 
-function Base.summary(AE::Autoencoder)
-    HP = AE.HP
-    println("Initial hyperparameter for constructing and training an AE:
-     latent dimensions: $(HP.zdim),
-     training epochs: $(HP.epochs),
-     batchsize: $(HP.batchsize),
-     learning rate for decoder parameter: $(HP.η),
-     weight decay parameter for decoder parameters: $(HP.λ)."
-    )
-end
-
-#---training function for a vanilla AE:
+#---training function:
 function train_AE!(X::AbstractMatrix{<:AbstractFloat}, AE::Autoencoder)
 
     if eltype(X) != Float32
@@ -57,7 +46,7 @@ function train_AE!(X::AbstractMatrix{<:AbstractFloat}, AE::Autoencoder)
     mean_trainlossPerEpoch = []
     @showprogress for epoch in 1:AE.HP.epochs
 
-        loader = Flux.Data.DataLoader(X, batchsize=AE.HP.batchsize, shuffle=true) 
+        loader = Flux.Data.DataLoader(X, batchsize=AE.HP.batchsize, shuffle=true)
 
         batchLosses = Float32[]
         for batch in loader
