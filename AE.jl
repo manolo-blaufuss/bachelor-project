@@ -18,12 +18,10 @@ mutable struct Autoencoder
     decoder::Union{Chain, Dense} # decoder
     HP::Hyperparameter # hyperparameters
     Z::Union{Nothing, Matrix{Float32}} # latent representation
-    Z_cluster::Union{Nothing, Matrix{Float32}} 
-    UMAP::Union{Nothing, Matrix{Float32}} 
 
     # Constructor to allow initializing Z as nothing
     function Autoencoder(; encoder::Union{Chain, Dense}, decoder::Union{Chain, Dense}, HP::Hyperparameter)
-        new(encoder, decoder, HP, nothing, nothing, nothing)
+        new(encoder, decoder, HP, nothing)
     end
 end
 (AE::Autoencoder)(X) = AE.decoder(AE.encoder(X))
