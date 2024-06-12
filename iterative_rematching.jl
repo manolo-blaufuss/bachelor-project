@@ -1,5 +1,5 @@
 """
-    iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_groups::Int, n_cells_per_group::Int, gene_idxs::Vector{Int})
+    iterative_rematching(n::Int, X::Matrix{Float32}, Z_X::Matrix{Float32}, B::Matrix{}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_groups::Int, n_cells_per_group::Int, gene_idxs::Vector{Int})
 
 Perform iterative rematching for communication between cells.
 
@@ -20,22 +20,22 @@ Perform iterative rematching for communication between cells.
 - `communication_idxs::Vector{Int}`: The indices of the communication partners.
 - `matching_coefficients::Dict`: The matching coefficients.
 """
-function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_groups::Int, n_cells_per_group::Int, gene_idxs::Vector{Int})
+function iterative_rematching(n::Int, X::Matrix{Float32}, Z_X::Matrix{Float32}, B::Matrix{}, dataset::Matrix{Float32}, cell_group_assignments::Vector{String}, n_cells::Int, n_groups::Int, n_cells_per_group::Int, gene_idxs::Vector{Int})
     Y = zeros(n_cells, length(gene_idxs))
     communication_idxs = zeros(Int, n_cells)
     for iter in 1:n
         R = X * B
         communication_idxs = zeros(Int, n_cells)
         for i in 1:n_cells
-            expression_R = R[i, :]
+            expression_R = R[i, :] # latent dim vector
             #sender_group = parse(Int, cell_group_assignments[i][7])
             #sender_start_idx = (sender_group - 1) * n_cells_per_group + 1
             #sender_end_idx = sender_start_idx + n_cells_per_group - 1
             # sample_idxs = setdiff(1:n_cells, sender_start_idx:sender_end_idx)
             cosine_similarities = zeros(n_cells)
             for j in 1:n_cells
-                expression_X = X[j, gene_idxs]
-                cosine_sim = dot(expression_X, expression_R) / (norm(expression_X) * norm(expression_R))
+                expression_Z_X = Z_X[j, gene_idxs]
+                cosine_sim = dot(expression_Z_X, expression_R) / (norm(expression_Z_X) * norm(expression_R))
                 cosine_similarities[j] = cosine_sim
             end
             sorted_sims = sort(cosine_similarities)
@@ -53,7 +53,7 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, B::Matrix{}, dataset::
         # Get Matrix containing y for each gene:
         Y = zeros(n_cells, length(gene_idxs))
         for i in 1:length(gene_idxs)
-            Y[:, i] = get_y(dataset, gene_idxs[i], communication_idxs)
+            Y[:, i] = get_y(Z_X, gene_idxs[i], communication_idxs)
         end
         # Perform componentwise boosting using X and Y
         B = get_beta_matrix((X, Y))

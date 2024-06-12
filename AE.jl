@@ -7,7 +7,7 @@ mutable struct Hyperparameter
     λ::Float32 # weight decay parameter
 
     # Constructor with default values
-    function Hyperparameter(; zdim::Int=10, epochs::Int=50, batchsize::Int=2^9, η::Float32=0.01f0, λ::Float32=0.1f0)
+    function Hyperparameter(; zdim::Int=10, epochs::Int=50, batchsize::Int=2^7, η::Float32=0.01f0, λ::Float32=0.0f0)
         new(zdim, epochs, batchsize, η, λ)
     end 
 end

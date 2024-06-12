@@ -32,36 +32,35 @@ gene_idxs = [1:n_genes+n_noise_genes;]
 reduced_gene_idxs = [1:latent_dim;]
 
 regression_data = extract_regression_data(dataset, gene_idxs, n_cells, n_groups)
-X = regression_data[1]'
+X = regression_data[1]
+Y = regression_data[2]
 
 
 # Define the hyperparameters for the AE:
-HP = Hyperparameter(zdim=latent_dim, epochs=20, batchsize=2^9, η=0.01f0, λ=0.1f0)
+HP = Hyperparameter(zdim=latent_dim, epochs=20, batchsize=2^7, η=0.01f0, λ=0.0f0)
 
 # Define the encoder and decoder:
-#encoder = Chain(Dense(size(X, 1), 32, tanh_fast), Dense(32, 16, tanh_fast), Dense(16, 8, tanh_fast), Dense(8, HP.zdim, tanh_fast))
-#decoder = Chain(Dense(HP.zdim, 8, tanh_fast), Dense(8, 16, tanh_fast), Dense(16, 32, tanh_fast), Dense(32, size(X, 1)))
-encoder = Chain(Dense(size(X, 1), 32, tanh_fast), Dense(32, HP.zdim, tanh_fast))
-decoder = Chain(Dense(HP.zdim, 32, tanh_fast), Dense(32, size(X, 1)))
+# Option 1: One layer, linear:
+#encoder = Chain(Dense(size(X, 2), HP.zdim))
+#decoder = Chain(Dense(HP.zdim, size(X, 2)))
+# Option 2: Three layers, tanh_fast:
+encoder = Chain(Dense(size(X, 2), 32, tanh_fast), Dense(32, HP.zdim, tanh_fast), Dense(HP.zdim, HP.zdim, tanh_fast))
+decoder = Chain(Dense(HP.zdim, 32, tanh_fast), Dense(32, size(X, 2), tanh_fast), Dense(size(X, 2), size(X, 2)))
+# Option xy
 
 # Define the AE:
 AE = Autoencoder(;encoder, decoder, HP)
 
 # Train the AE:
-mean_trainlossPerEpoch = train_AE!(X, AE)
+mean_trainlossPerEpoch = train_AE!(X', AE)
 
 # Get the latent representation:
-Z = AE.encoder(X)
-Z = copy(Z')
+Z_X = AE.encoder(X')
+Z_Y = AE.encoder(Y')
 
-regression_data_reduced = extract_regression_data(Z, reduced_gene_idxs, n_cells, n_groups)
-
-# Perform componentwise boosting using X and y from regression_data:
-X_reduced = regression_data_reduced[1]
-Y_reduced = regression_data_reduced[2]
-
-B = get_beta_matrix(regression_data_reduced)
+# Perform componentwise boosting using X and latent representation of Y:
+B = get_beta_matrix((X, Z_Y'))
 
 # Perform iterative rematching:
-n = 10
-B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, Z, B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, reduced_gene_idxs)
+n = 20
+B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, copy(Z_X'), B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, reduced_gene_idxs)
