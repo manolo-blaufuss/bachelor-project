@@ -62,5 +62,5 @@ Z_Y = AE.encoder(Y')
 B = get_beta_matrix((X, Z_Y'))
 
 # Perform iterative rematching:
-n = 20
+n = 10
 B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, copy(Z_X'), B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, reduced_gene_idxs)
