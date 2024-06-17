@@ -80,7 +80,7 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Z_X::Matrix{Float32}, 
 end
 
 function plot_similarity(sims, sorted_sims, cell_number, iter)
-    p = plot(sims, title = "Cosine sims cell " * string(cell_number) * " iter " * string(iter), label = "Similarity", xaxis = "Index", yaxis = "Similarity")
+    p = scatter(sims, title = "Cosine sims cell " * string(cell_number) * " iter " * string(iter), label = "Similarity", xaxis = "Index", yaxis = "Similarity")
     display(p)
     q = plot(sorted_sims, title = "Sorted cosine sims cell " * string(cell_number) * " iter " * string(iter), label = "Similarity", xaxis = "Index", yaxis = "Similarity")
     display(q)

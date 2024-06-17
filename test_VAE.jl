@@ -41,23 +41,36 @@ HP = Hyperparameter(zdim=latent_dim, epochs=20, batchsize=2^7, η=0.01f0, λ=0.0
 akt = tanh_fast; #relu, sigmoid, tanh_fast, tanh, ...
 
 # Define the encoder and decoder:
+modelseed = 42;
+Random.seed!(modelseed)
 # Option 1: One layer, linear:
-#encoder = Chain(Dense(size(X, 2), HP.zdim))
-#decoder = Chain(Dense(HP.zdim, size(X, 2)))
+#encoder = Chain(Dense(size(X, 2), 2 * HP.zdim))
+#decoder = Chain(Dense(HP.zdim, 2 * size(X, 2)))
 # Option 2: Three layers, tanh_fast:
-encoder = Chain(Dense(size(X, 2), 32, akt), Dense(32, HP.zdim, akt), Dense(HP.zdim, HP.zdim, akt))
-decoder = Chain(Dense(HP.zdim, 32, akt), Dense(32, size(X, 2), akt), Dense(size(X, 2), size(X, 2)))
-# Option xy
+#encoder = Chain(Dense(size(X, 2), 32, akt), Dense(32, 2*HP.zdim, akt), Dense(2*HP.zdim, 2*HP.zdim, akt))
+#decoder = Chain(Dense(HP.zdim, 32, akt), Dense(32, 2*size(X, 2), akt), Dense(2*size(X, 2), 2*size(X, 2)))
+# Option 3
+encoder = Chain(Dense(size(X, 2) => 2^9, akt), Dense(2^9 => 2^7, akt), Dense(2^7 => 2*HP.zdim, akt), Dense(2*HP.zdim => 2*HP.zdim));
+decoder = Chain(Dense(HP.zdim => 2^7, akt), Dense(2^7 => 2^9, akt), Dense(2^9 => 2*size(X,2), akt), Dense(2*size(X,2) => 2*size(X,2))); #2*p with trainable variance and p without!
+
 
 # Define the AE:
 AE = Autoencoder(;encoder, decoder, HP)
+summary(AE)
 
 # Train the AE:
-mean_trainlossPerEpoch = train_AE!(X', AE)
+mean_trainlossPerEpoch = train_gaußianVAE!(X', AE)
 
 # Get the latent representation:
-Z_X = AE.encoder(X')
-Z_Y = AE.encoder(Y')
+#1) Get the mean of the input data: 
+Z_μ_X = get_VAE_latentRepresentation(AE.encoder, X'; sampling=false)[1];
+Z_μ_Y = get_VAE_latentRepresentation(AE.encoder, Y'; sampling=false)[1];
+#2) Get the variance of the input data:
+Z_logvar = get_VAE_latentRepresentation(AE.encoder, X'; sampling=false)[2];
+#3) Get the (sampled) latent representation of the input data:
+Z_X = get_VAE_latentRepresentation(AE.encoder, X'; sampling=true)[3];
+Z_Y = get_VAE_latentRepresentation(AE.encoder, Y'; sampling=true)[3];
+
 
 # Perform componentwise boosting using X and latent representation of Y:
 B = get_beta_matrix((X, Z_Y'))
