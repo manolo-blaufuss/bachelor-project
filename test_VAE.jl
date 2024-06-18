@@ -47,11 +47,14 @@ Random.seed!(modelseed)
 #encoder = Chain(Dense(size(X, 2), 2 * HP.zdim))
 #decoder = Chain(Dense(HP.zdim, 2 * size(X, 2)))
 # Option 2: Three layers, tanh_fast:
-encoder = Chain(Dense(size(X, 2), 32, akt), Dense(32, 2*HP.zdim, akt), Dense(2*HP.zdim, 2*HP.zdim, akt))
-decoder = Chain(Dense(HP.zdim, 32, akt), Dense(32, 2*size(X, 2), akt), Dense(2*size(X, 2), 2*size(X, 2)))
+encoder = Chain(Dense(size(X, 2), 64, akt), Dense(64, 2*HP.zdim, akt), Dense(2*HP.zdim, 2*HP.zdim))
+decoder = Chain(Dense(HP.zdim, 64, akt), Dense(64, 2*size(X, 2), akt), Dense(2*size(X, 2), 2*size(X, 2)))
 # Option 3
 #encoder = Chain(Dense(size(X, 2) => 2^9, akt), Dense(2^9 => 2^7, akt), Dense(2^7 => 2*HP.zdim, akt), Dense(2*HP.zdim => 2*HP.zdim));
 #decoder = Chain(Dense(HP.zdim => 2^7, akt), Dense(2^7 => 2^9, akt), Dense(2^9 => 2*size(X,2), akt), Dense(2*size(X,2) => 2*size(X,2))); #2*p with trainable variance and p without!
+# Option 4: Four layers, tanh_fast:
+#encoder = Chain(Dense(size(X, 2), 64, akt), Dense(64, 32, akt), Dense(32, 2*HP.zdim, akt), Dense(2*HP.zdim, 2*HP.zdim))
+#decoder = Chain(Dense(HP.zdim, 32, akt), Dense(32, 64, akt), Dense(64, 2*size(X, 2), akt), Dense(2*size(X, 2), 2*size(X, 2)))
 
 
 # Define the AE:
