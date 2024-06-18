@@ -73,8 +73,8 @@ Z_Y = get_VAE_latentRepresentation(AE.encoder, Y'; sampling=true)[3];
 
 
 # Perform componentwise boosting using X and latent representation of Y:
-B = get_beta_matrix((X, Z_Y'))
+B = get_beta_matrix((X, Z_μ_Y'))
 
 # Perform iterative rematching:
 n = 10
-B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, copy(Z_X'), B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, reduced_gene_idxs)
+B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, copy(Z_μ_X'), B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, reduced_gene_idxs)
