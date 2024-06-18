@@ -11,6 +11,7 @@ include("extract_regressionData.jl")
 include("AE.jl")
 include("componentwise_boosting.jl")
 include("iterative_rematching.jl")
+gr(dpi=300)
 
 # Define which groups sends signals to which group in a binary communication graph/matrix (sender groups x receiver groups):
 # Note: This is just an example.
@@ -28,12 +29,18 @@ latent_dim = 4
 # Generate the simulated data (set a seed for reproducibility):
 dataset, group_communication_matrix, cell_group_assignments, receptor_genes, sel_receptors, ligand_genes, sel_ligands = simulate_interacting_singleCells(n_cells, n_genes, n_groups; seed=7, communication_graph = communication_graph)
 
+savefig(heatmap(dataset, title="Original Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_data.png")
+savefig(heatmap(X, title="Original Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_data.svg")
+
 gene_idxs = [1:n_genes+n_noise_genes;]
 reduced_gene_idxs = [1:latent_dim;]
 
 regression_data = extract_regression_data(dataset, gene_idxs, n_cells, n_groups)
 X = regression_data[1]
 Y = regression_data[2]
+
+savefig(heatmap(X, title="Standardized Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_X.png")
+savefig(heatmap(X, title="Standardized Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_X.svg")
 
 
 # Define the hyperparameters for the AE:
@@ -47,11 +54,11 @@ Random.seed!(modelseed)
 #encoder = Chain(Dense(size(X, 2), 2 * HP.zdim))
 #decoder = Chain(Dense(HP.zdim, 2 * size(X, 2)))
 # Option 2: Three layers, tanh_fast:
-encoder = Chain(Dense(size(X, 2), 64, akt), Dense(64, 2*HP.zdim, akt), Dense(2*HP.zdim, 2*HP.zdim))
-decoder = Chain(Dense(HP.zdim, 64, akt), Dense(64, 2*size(X, 2), akt), Dense(2*size(X, 2), 2*size(X, 2)))
+#encoder = Chain(Dense(size(X, 2), 64, akt), Dense(64, 2*HP.zdim, akt), Dense(2*HP.zdim, 2*HP.zdim))
+#decoder = Chain(Dense(HP.zdim, 64, akt), Dense(64, 2*size(X, 2), akt), Dense(2*size(X, 2), 2*size(X, 2)))
 # Option 3
-#encoder = Chain(Dense(size(X, 2) => 2^9, akt), Dense(2^9 => 2^7, akt), Dense(2^7 => 2*HP.zdim, akt), Dense(2*HP.zdim => 2*HP.zdim));
-#decoder = Chain(Dense(HP.zdim => 2^7, akt), Dense(2^7 => 2^9, akt), Dense(2^9 => 2*size(X,2), akt), Dense(2*size(X,2) => 2*size(X,2))); #2*p with trainable variance and p without!
+encoder = Chain(Dense(size(X, 2) => 2^9, akt), Dense(2^9 => 2^7, akt), Dense(2^7 => 2*HP.zdim, akt), Dense(2*HP.zdim => 2*HP.zdim));
+decoder = Chain(Dense(HP.zdim => 2^7, akt), Dense(2^7 => 2^9, akt), Dense(2^9 => 2*size(X,2), akt), Dense(2*size(X,2) => 2*size(X,2))); #2*p with trainable variance and p without!
 # Option 4: Four layers, tanh_fast:
 #encoder = Chain(Dense(size(X, 2), 64, akt), Dense(64, 32, akt), Dense(32, 2*HP.zdim, akt), Dense(2*HP.zdim, 2*HP.zdim))
 #decoder = Chain(Dense(HP.zdim, 32, akt), Dense(32, 64, akt), Dense(64, 2*size(X, 2), akt), Dense(2*size(X, 2), 2*size(X, 2)))
@@ -66,18 +73,31 @@ mean_trainlossPerEpoch = train_gaußianVAE!(X', AE)
 
 # Get the latent representation:
 #1) Get the mean of the input data: 
-Z_μ_X = get_VAE_latentRepresentation(AE.encoder, X'; sampling=false)[1];
-Z_μ_Y = get_VAE_latentRepresentation(AE.encoder, Y'; sampling=false)[1];
+Z_X_μ = get_VAE_latentRepresentation(AE.encoder, X'; sampling=false)[1];
+Z_Y_μ = get_VAE_latentRepresentation(AE.encoder, Y'; sampling=false)[1];
 #2) Get the variance of the input data:
 Z_logvar = get_VAE_latentRepresentation(AE.encoder, X'; sampling=false)[2];
 #3) Get the (sampled) latent representation of the input data:
 Z_X = get_VAE_latentRepresentation(AE.encoder, X'; sampling=true)[3];
 Z_Y = get_VAE_latentRepresentation(AE.encoder, Y'; sampling=true)[3];
 
+savefig(heatmap(Z_X_μ, title="Latent Representation of X", xlabel="Latent Dimensions", ylabel="Cells"), "output/auto_output/Z_X_μ.png")
+savefig(heatmap(Z_X_μ, title="Latent Representation of X", xlabel="Latent Dimensions", ylabel="Cells"), "output/auto_output/Z_X_μ.svg")
+savefig(heatmap(Z_Y_μ, title="Latent Representation of Y", xlabel="Latent Dimensions", ylabel="Cells"), "output/auto_output/Z_Y_μ.png")
+savefig(heatmap(Z_Y_μ, title="Latent Representation of Y", xlabel="Latent Dimensions", ylabel="Cells"), "output/auto_output/Z_Y_μ.svg")
+savefig(heatmap(abs.(cor(Z_X_μ, dims=2)), xlabel = "Latent Dimensions", ylabel = "Latent Dimensions", title = "Absolute Correlation", color = :vik), "output/auto_output/correlation.png")
+savefig(heatmap(abs.(cor(Z_X_μ, dims=2)), xlabel = "Latent Dimensions", ylabel = "Latent Dimensions", title = "Absolute Correlation", color = :vik), "output/auto_output/correlation.svg")
+savefig(plot(1:length(mean_trainlossPerEpoch), mean_trainlossPerEpoch, title = "Mean train loss per epoch", xlabel = "Epoch", ylabel = "Loss", legend = true, label = "Train loss", linecolor = :red, linewidth = 2), "output/auto_output/train_loss.png")
+savefig(plot(1:length(mean_trainlossPerEpoch), mean_trainlossPerEpoch, title = "Mean train loss per epoch", xlabel = "Epoch", ylabel = "Loss", legend = true, label = "Train loss", linecolor = :red, linewidth = 2), "output/auto_output/train_loss.svg")
 
 # Perform componentwise boosting using X and latent representation of Y:
-B = get_beta_matrix((X, Z_μ_Y'))
+B = get_beta_matrix((X, Z_Y_μ'))
+
+savefig(heatmap(B, title="Beta Matrix", xlabel="Latent Dimensions", ylabel="Genes"), "output/auto_output/B.png")
+savefig(heatmap(B, title="Beta Matrix", xlabel="Latent Dimensions", ylabel="Genes"), "output/auto_output/B.svg")
+savefig(scatter(mean((X * B - Z_Y_μ').^2, dims=1)', title = "Mean Squared Error (initial) ", label = "MSE", xaxis = "Latent Dimensions", yaxis = "MSE", markersize=1), "output/auto_output/MSE_initial.png")
+savefig(scatter(mean((X * B - Z_Y_μ').^2, dims=1)', title = "Mean Squared Error (initial) ", label = "MSE", xaxis = "Latent Dimensions", yaxis = "MSE", markersize=1), "output/auto_output/MSE_initial.svg")
 
 # Perform iterative rematching:
-n = 10
-B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, copy(Z_μ_X'), B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, reduced_gene_idxs)
+n = 20
+B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, copy(Z_X_μ'), B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, reduced_gene_idxs)

@@ -80,17 +80,12 @@ function assign_communication_partners(n_cells::Int, n_groups::Int, communicatio
             end
         end
     end
-    """
-    println(count(x -> 251 <= x <= 500, communication_idxs[1:250]))
-    println(count(x -> 501 <= x <= 750, communication_idxs[251:500]))
-    println(count(x -> 751 <= x <= 1000, communication_idxs[501:750]))
-    println(count(x -> 1 <= x <= 250, communication_idxs[751:1000]))
     comm_mat = zeros(1000,1000)
     for i in 1:1000
         comm_mat[i, communication_idxs[i]] = 1
     end
-    heatmap(comm_mat')
-    """
+    savefig(heatmap(comm_mat', xlabel = "Sender cells", ylabel = "Receiver cells", title = "Matching partners (initial)"), "output/auto_output/matching_partners_0.png")
+    savefig(heatmap(comm_mat', xlabel = "Sender cells", ylabel = "Receiver cells", title = "Matching partners (initial)"), "output/auto_output/matching_partners_0.svg")
     return communication_idxs
 end
 """
