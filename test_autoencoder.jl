@@ -49,11 +49,11 @@ akt = tanh_fast; #relu, sigmoid, tanh_fast, tanh, ...
 
 # Define the encoder and decoder:
 # Option 1: One layer, linear:
-#encoder = Chain(Dense(size(X, 2), HP.zdim))
-#decoder = Chain(Dense(HP.zdim, size(X, 2)))
+encoder = Chain(Dense(size(X, 2), HP.zdim))
+decoder = Chain(Dense(HP.zdim, size(X, 2)))
 # Option 2: Three layers, tanh_fast:
-encoder = Chain(Dense(size(X, 2), 32, akt), Dense(32, HP.zdim, akt), Dense(HP.zdim, HP.zdim, akt))
-decoder = Chain(Dense(HP.zdim, 32, akt), Dense(32, size(X, 2), akt), Dense(size(X, 2), size(X, 2)))
+#encoder = Chain(Dense(size(X, 2), 32, akt), Dense(32, HP.zdim, akt), Dense(HP.zdim, HP.zdim, akt))
+#decoder = Chain(Dense(HP.zdim, 32, akt), Dense(32, size(X, 2), akt), Dense(size(X, 2), size(X, 2)))
 # Option xy
 
 # Define the AE:
