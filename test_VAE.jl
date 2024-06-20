@@ -30,7 +30,7 @@ latent_dim = 4
 dataset, group_communication_matrix, cell_group_assignments, receptor_genes, sel_receptors, ligand_genes, sel_ligands = simulate_interacting_singleCells(n_cells, n_genes, n_groups; seed=7, communication_graph = communication_graph)
 
 savefig(heatmap(dataset, title="Original Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_data.png")
-savefig(heatmap(X, title="Original Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_data.svg")
+savefig(heatmap(dataset, title="Original Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_data.svg")
 
 gene_idxs = [1:n_genes+n_noise_genes;]
 reduced_gene_idxs = [1:latent_dim;]

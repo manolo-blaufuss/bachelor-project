@@ -28,12 +28,18 @@ latent_dim = 4
 # Generate the simulated data (set a seed for reproducibility):
 dataset, group_communication_matrix, cell_group_assignments, receptor_genes, sel_receptors, ligand_genes, sel_ligands = simulate_interacting_singleCells(n_cells, n_genes, n_groups; seed=7, communication_graph = communication_graph)
 
+savefig(heatmap(dataset, title="Original Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_data.png")
+savefig(heatmap(dataset, title="Original Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_data.svg")
+
 gene_idxs = [1:n_genes+n_noise_genes;]
 reduced_gene_idxs = [1:latent_dim;]
 
 regression_data = extract_regression_data(dataset, gene_idxs, n_cells, n_groups)
 X = regression_data[1]
 Y = regression_data[2]
+
+savefig(heatmap(X, title="Standardized Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_X.png")
+savefig(heatmap(X, title="Standardized Data", xlabel="Genes", ylabel="Cells"), "output/auto_output/heatmap_X.svg")
 
 
 # Define the hyperparameters for the AE:
@@ -59,8 +65,24 @@ mean_trainlossPerEpoch = train_AE!(X', AE)
 Z_X = AE.encoder(X')
 Z_Y = AE.encoder(Y')
 
+savefig(heatmap(Z_X, title="Latent Representation of X", xlabel="Latent Dimensions", ylabel="Cells"), "output/auto_output/Z_X.png")
+savefig(heatmap(Z_X, title="Latent Representation of X", xlabel="Latent Dimensions", ylabel="Cells"), "output/auto_output/Z_X.svg")
+savefig(heatmap(Z_Y, title="Latent Representation of Y", xlabel="Latent Dimensions", ylabel="Cells"), "output/auto_output/Z_Y.png")
+savefig(heatmap(Z_Y, title="Latent Representation of Y", xlabel="Latent Dimensions", ylabel="Cells"), "output/auto_output/Z_Y.svg")
+savefig(heatmap(abs.(cor(Z_X, dims=2)), xlabel = "Latent Dimensions", ylabel = "Latent Dimensions", title = "Absolute Correlation", color = :vik), "output/auto_output/correlation.png")
+savefig(heatmap(abs.(cor(Z_X, dims=2)), xlabel = "Latent Dimensions", ylabel = "Latent Dimensions", title = "Absolute Correlation", color = :vik), "output/auto_output/correlation.svg")
+savefig(plot(1:length(mean_trainlossPerEpoch), mean_trainlossPerEpoch, title = "Mean train loss per epoch", xlabel = "Epoch", ylabel = "Loss", legend = true, label = "Train loss", linecolor = :red, linewidth = 2), "output/auto_output/train_loss.png")
+savefig(plot(1:length(mean_trainlossPerEpoch), mean_trainlossPerEpoch, title = "Mean train loss per epoch", xlabel = "Epoch", ylabel = "Loss", legend = true, label = "Train loss", linecolor = :red, linewidth = 2), "output/auto_output/train_loss.svg")
+
+
 # Perform componentwise boosting using X and latent representation of Y:
 B = get_beta_matrix((X, Z_Y'))
+
+savefig(heatmap(B, title="Beta Matrix", xlabel="Latent Dimensions", ylabel="Genes"), "output/auto_output/B.png")
+savefig(heatmap(B, title="Beta Matrix", xlabel="Latent Dimensions", ylabel="Genes"), "output/auto_output/B.svg")
+savefig(scatter(mean((X * B - Z_Y').^2, dims=1)', title = "Mean Squared Error (initial) ", label = "MSE", xaxis = "Latent Dimensions", yaxis = "MSE", markersize=1), "output/auto_output/MSE_initial.png")
+savefig(scatter(mean((X * B - Z_Y').^2, dims=1)', title = "Mean Squared Error (initial) ", label = "MSE", xaxis = "Latent Dimensions", yaxis = "MSE", markersize=1), "output/auto_output/MSE_initial.svg")
+
 
 # Perform iterative rematching:
 n = 10
