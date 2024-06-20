@@ -11,6 +11,7 @@ include("extract_regressionData.jl")
 include("AE.jl")
 include("componentwise_boosting.jl")
 include("iterative_rematching.jl")
+gr(dpi=300)
 
 # Define which groups sends signals to which group in a binary communication graph/matrix (sender groups x receiver groups):
 # Note: This is just an example.
@@ -85,5 +86,5 @@ savefig(scatter(mean((X * B - Z_Y').^2, dims=1)', title = "Mean Squared Error (i
 
 
 # Perform iterative rematching:
-n = 10
+n = 20
 B_iter, Y_iter, communication_idxs, matching_coefficients = iterative_rematching(n, X, copy(Z_X'), B, dataset, cell_group_assignments, n_cells, n_groups, n_cells_per_group, reduced_gene_idxs)
