@@ -4,6 +4,40 @@
 
 include("componentwise_boosting.jl")
 
+
+
+
+function get_y(X::Matrix{Float32}, idx::Int, communication_idxs::Vector{Int})
+    # Define the response vector y:
+    idx_expression = X[:, idx]
+    y = zeros(length(idx_expression))
+    for i in 1:length(idx_expression)
+        y[i] = idx_expression[communication_idxs[i]]
+    end
+    return (y .- mean(y))./ std(y, corrected=true)
+end
+
+#######################################
+# Data Processing: Standalone Functions
+#######################################
+
+function get_beta_matrix(X, Y; ϵ = 0.2, M = 7, save_figures::Bool=false, iter::Int=-1)
+    beta_matrix = zeros(Float32, size(X, 2), size(Y, 2))
+    for i in 1:size(Y, 2)
+        y = Y[:, i]
+        β = zeros(size(X, 2)) #start with a zero initialization of the coefficient vector
+        compL2Boost!(β, X, y, ϵ, M)
+        beta_matrix[:, i] = β
+    end
+    if save_figures
+        filename = "beta_matrix_" * string(iter)
+        # Create a heatmap of the beta matrix and save it:
+        savefig(heatmap(beta_matrix, title="Beta Matrix (iteration " * string(iter) * ")", xlabel="Predictors", ylabel="Responses"), "output/auto_output/" * filename * ".png")
+        savefig(heatmap(beta_matrix, title="Beta Matrix (iteration " * string(iter) * ")", xlabel="Predictors", ylabel="Responses"), "output/auto_output/" * filename * ".svg")
+    end
+    return beta_matrix
+end
+
 function standardize(X::AbstractArray; corrected_std::Bool=true, dims::Int=1)
     X = (X .- mean(X, dims=dims))./ std(X, corrected=corrected_std, dims=dims)
 
@@ -38,16 +72,6 @@ function init_communication_partners(n_cells::Int, n_groups::Int, communication_
     return communication_idxs
 end
 
-function get_y(X::Matrix{Float32}, idx::Int, communication_idxs::Vector{Int})
-    # Define the response vector y:
-    idx_expression = X[:, idx]
-    y = zeros(length(idx_expression))
-    for i in 1:length(idx_expression)
-        y[i] = idx_expression[communication_idxs[i]]
-    end
-    return (y .- mean(y))./ std(y, corrected=true)
-end
-
 function get_Y(X::Matrix{Float32}, communication_idxs::Vector{Int}; save_figures::Bool=false, iter::Int=-1)
     Y = zeros(Float32, size(X))
     for i in 1:size(X)[2]
@@ -60,6 +84,17 @@ function get_Y(X::Matrix{Float32}, communication_idxs::Vector{Int}; save_figures
         savefig(h, "output/auto_output/" * filename * ".svg")
     end
     return Y
+end
+
+function get_prediction(X::Matrix{Float32}, B::Matrix{Float32}; save_figures::Bool=false, iter::Int=-1)
+    Ŷ = X * B
+    if save_figures
+        filename = "prediction_" * string(iter)
+        h = heatmap(Ŷ, title="Predicted Response Matrix (iteration " * string(iter) * ")", xlabel="Genes", ylabel="Cells")
+        savefig(h, "output/auto_output/" * filename * ".png")
+        savefig(h, "output/auto_output/" * filename * ".svg")
+    end
+    return Ŷ
 end
 
 function refine_interaction_partners(X::Matrix{Float32}, Ŷ::Matrix{Float32}; save_figures::Bool=false, iter::Int=-1)
@@ -100,22 +135,10 @@ function refine_interaction_partners(X::Matrix{Float32}, Ŷ::Matrix{Float32}; sa
     return communication_idxs
 end
 
-function get_prediction(X::Matrix{Float32}, B::Matrix{Float32}; save_figures::Bool=false, iter::Int=-1)
-    Ŷ = X * B
-    if save_figures
-        filename = "prediction_" * string(iter)
-        h = heatmap(Ŷ, title="Predicted Response Matrix (iteration " * string(iter) * ")", xlabel="Genes", ylabel="Cells")
-        savefig(h, "output/auto_output/" * filename * ".png")
-        savefig(h, "output/auto_output/" * filename * ".svg")
-    end
-    return Ŷ
-end
+#######################################
+# Data Processing: Main Functions
+#######################################
 
-
-
-########################
-# Data Processing:
-########################
 function preprocess_data(dataset::Matrix{Float32}, communication_graph::Matrix{Int}; noise_percentage::Float32=0.3f0, save_figures::Bool=false)
     n_cells = size(dataset)[1]
     n_groups = size(communication_graph)[1]

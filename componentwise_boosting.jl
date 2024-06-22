@@ -75,31 +75,3 @@ function compL2Boost!(β::AbstractVector{<:AbstractFloat}, X::AbstractMatrix{<:A
 
     end
 end
-
-"""
-    get_beta_matrix(regression_data::Tuple{Any, Any})
-
-Compute the OLLS-estimator for each component of the design matrix for each communication.
-
-# Arguments
-- `regression_data::Tuple{Any, Any}`: A tuple containing the design matrix `X` and the response matrix `Y`.
-
-# Returns
-- `beta_matrix::Matrix{Float32}`: A matrix of size (p x q) where p is the number of predictors and q is the number of responses. It contains the OLLS-estimator for each component of the design matrix for each communication.
-"""
-function get_beta_matrix(X, Y; ϵ = 0.2, M = 7, save_figures::Bool=false, iter::Int=-1)
-    beta_matrix = zeros(Float32, size(X, 2), size(Y, 2))
-    for i in 1:size(Y, 2)
-        y = Y[:, i]
-        β = zeros(size(X, 2)) #start with a zero initialization of the coefficient vector
-        compL2Boost!(β, X, y, ϵ, M)
-        beta_matrix[:, i] = β
-    end
-    if save_figures
-        filename = "beta_matrix_" * string(iter)
-        # Create a heatmap of the beta matrix and save it:
-        savefig(heatmap(beta_matrix, title="Beta Matrix (iteration " * string(iter) * ")", xlabel="Predictors", ylabel="Responses"), "output/auto_output/" * filename * ".png")
-        savefig(heatmap(beta_matrix, title="Beta Matrix (iteration " * string(iter) * ")", xlabel="Predictors", ylabel="Responses"), "output/auto_output/" * filename * ".svg")
-    end
-    return beta_matrix
-end
