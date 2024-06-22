@@ -1,13 +1,10 @@
-# Loading required packages for the simulation (if not already installed, first install via: `using Pkg; Pkg.add("PackageName")`):
-using Distributions, Plots, Random, StatsBase, DataFrames
-
 """
 simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60, n_groups::Int = 4;
-        dropout_rate::Real = 0.2,
+        dropout_rate::Real = 0.1,
         HEG_mean::Real = 10,
-        HEG_sd::Real = 3,
+        HEG_sd::Real = 2,
         communication_mean::Real = 10,
-        communication_sd::Real = 0.1,
+        communication_sd::Real = 1,
         technical_noise_mean::Real = 0,
         technical_noise_sd::Real = 4,
         n_noise_genes::Int = 10,
@@ -36,16 +33,17 @@ Simulates the expression levels of genes in interacting single cells.
 - `dataset::Matrix{Float32}`: The simulated expression dataset.
 - `group_communication_matrix::Matrix{Int}`: The communication graph between cell groups.
 - `cell_group_assignments::Vector{String}`: The assignments of cells to cell groups.
+- `receptor_genes::Dict{Any, Any}`: The receptor genes for each cell group.
 - `sel_receptors::Vector{Any}`: The selected receptor genes for each cell group.
+- `ligand_genes::Dict{Any, Any}`: The ligand genes for each cell group.
 - `sel_ligands::Vector{Any}`: The selected ligand genes for each cell group.
-- `communications::Dict{String, DataFrame}`: The pairwise communication dataframes between cell groups. Each dataframe contains the sender, receiver, and geometric mean of the ligand and receptor genes.
 """
 function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60, n_groups::Int = 4;
-        dropout_rate::Real = 0.2,
+        dropout_rate::Real = 0.1,
         HEG_mean::Real = 10,
-        HEG_sd::Real = 3,
+        HEG_sd::Real = 2,
         communication_mean::Real = 10,
-        communication_sd::Real = 3,
+        communication_sd::Real = 1,
         technical_noise_mean::Real = 0,
         technical_noise_sd::Real = 4,
         n_noise_genes::Int = 10,
@@ -126,7 +124,7 @@ function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60
 
         #for the cells belonging to the cell group, randomly select half of them to express the ligand
         cell_indices = findall(x -> x == cell_group, cell_group_assignments)
-        num_cells_per_group = length(cell_indices) ÷ 3  # Third the cells per group
+        num_cells_per_group = length(cell_indices) #÷ 3  # Third the cells per group
         selected_cells = sample(cell_indices, num_cells_per_group, replace=false)
         dataset[selected_cells, comm_genes] .= rand(Normal(communication_mean, communication_sd), size(dataset[selected_cells, comm_genes]))
     end
@@ -150,7 +148,7 @@ function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60
 
             #for the cells belonging to the cell group, randomly select half of them to express the ligand
             cell_indices = findall(x -> x == cell_group, cell_group_assignments)
-            num_cells_per_group = length(cell_indices) ÷ 3  # Third the cells per group
+            num_cells_per_group = length(cell_indices) #÷ 3  # Third the cells per group
             selected_cells = sample(cell_indices, num_cells_per_group, replace=false)
             dataset[selected_cells, comm_genes] .= rand(Normal(communication_mean, communication_sd), size(dataset[selected_cells, comm_genes]))
         else
@@ -179,37 +177,7 @@ function simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60
     # Round all Float values integers:
     dataset = round.(Int, dataset)
 
-
-    ## Compute pairwise geometric mean between all ligand genes and all receptor genes
-    #pairwise_geometric_means = Dict()
-    communications = Dict()
-    for (i, l) in enumerate(sel_ligands)
-        for (j, r) in enumerate(sel_receptors)
-            # Check if the ligand and receptor are defined to communicate
-            if group_communication_matrix[i, j] == 1
-                ligand_expression = dataset[:, l]
-                receptor_expression = dataset[:, r]
-
-
-                df = DataFrame()
-                cell_group_interaction_vec = vec([cell_group_assignments[a]*"-"*cell_group_assignments[b] for a in 1:length(ligand_expression), b in 1:length(receptor_expression)])
-                df[!, "GroupInteraction"] = cell_group_interaction_vec
-                geometric_means = vec([sqrt(ligand_expression[a] * receptor_expression[b]) for a in 1:length(ligand_expression), b in 1:length(receptor_expression)])
-                df[!, "GeometricMean"] = geometric_means
-                cell_pair = vec(["$(a)"*"-"*"$(b)" for a in 1:length(ligand_expression), b in 1:length(receptor_expression)])
-                df[!, "CellPair"] = cell_pair
-                senders = vec([a for a in 1:length(ligand_expression), b in 1:length(receptor_expression)])
-                df[!, "Sender"] = senders
-                receivers = vec([b for b in 1:length(receptor_expression), b in 1:length(receptor_expression)])
-                df[!, "Receiver"] = receivers
-                
-                # Compute geometric mean
-                communications["Group$(i)" * "-" * "Group$(j)"] = df
-            end
-        end
-    end
-
-    return Float32.(dataset), group_communication_matrix, cell_group_assignments, sel_receptors, sel_ligands, communications
+    return Float32.(dataset), group_communication_matrix, cell_group_assignments, receptor_genes, sel_receptors, ligand_genes, sel_ligands
 end
 
 ### Test:
@@ -218,8 +186,4 @@ end
 # communication_graph = [1 0 0 0; 0 1 0 0; 0 1 0 0; 0 0 1 0];
 
 # Generate the simulated data (set a seed for reproducibility):
-# dataset, group_communication_matrix, cell_group_assignments, sel_receptors, sel_ligands, communications = simulate_interacting_singleCells(1000, 60, 4; seed=7, communication_graph = communication_graph)
-
-# Plot the simulated gene expression data:
-# heatmap(dataset)
-# heatmap(group_communication_matrix)
+# dataset, group_communication_matrix, cell_group_assignments, sel_receptors, sel_ligands = simulate_interacting_singleCells(1000, 60, 4; seed=7, communication_graph = communication_graph)
