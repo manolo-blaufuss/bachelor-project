@@ -165,7 +165,7 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z:
         Z = Z
     end
     Y_t = Y
-    B = zeros(Float32, size(Z)[2], size(Y_t)[2])
+    B = zeros(Float32, size(X)[2], size(Y_t)[2])
     Ŷ = zeros(Float32, size(Z)[1], size(B)[2])
     communication_idxs = zeros(Int, size(Z)[1])
 
@@ -178,10 +178,10 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z:
             save_figures_t = false
         end
         # Perform cmponentwise boosting
-        B = get_beta_matrix(Z, Y_t, save_figures=save_figures_t, iter=t)
+        B = get_beta_matrix(X, Y_t, save_figures=save_figures_t, iter=t)
 
         # Get prediction:
-        Ŷ = get_prediction(Z, B, save_figures=save_figures_t, iter=t)
+        Ŷ = get_prediction(X, B, save_figures=save_figures_t, iter=t)
         
         # Get communication partners using cosine similarity:
         communication_idxs = refine_interaction_partners(Z, Ŷ, save_figures=save_figures_t, iter=t)
