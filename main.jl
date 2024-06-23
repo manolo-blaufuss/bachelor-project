@@ -37,7 +37,7 @@ dataset, group_communication_matrix, cell_group_assignments, receptor_genes, sel
 # Preprocess the data:
 X, Y = preprocess_data(dataset, group_communication_matrix, noise_percentage=0.3f0, save_figures=create_plots)
 
-# Iterative refinement of observational units using componentwise boosting (and possibly dimension reduction):
+# Iterative refinement of the mapping of observational units using componentwise boosting (and possibly dimension reduction):
 if dim_reduction in ["AE", "VAE"]
     Z_X, Z_Y = dimension_reduction(X, Y, dim_reduction, AE_architecture, latent_dim, save_figures=create_plots)
     B, Ŷ, communication_idxs, Y_t = iterative_rematching(10, X, copy(Z_Y'), Z=copy(Z_X'), save_figures=create_plots)
