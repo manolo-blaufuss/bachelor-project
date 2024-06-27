@@ -50,7 +50,7 @@ function standardize(X::AbstractArray; corrected_std::Bool=true, dims::Int=1)
     return X
 end
 
-function init_communication_partners(n_cells::Int, n_groups::Int, communication_pairs::Vector{Tuple{Int,Int}}, noise_percentage::Float32)
+function init_communication_partners(n_cells::Int, n_groups::Int, communication_pairs::Vector{Tuple{Int,Int}}; noise_percentage::Float32=1.0f0)
     communication_idxs = zeros(Int, n_cells)
     n_cells_per_group = n_cells ÷ n_groups
     threshold = round(Int, (1-noise_percentage) * n_cells_per_group)
