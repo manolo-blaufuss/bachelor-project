@@ -164,7 +164,7 @@ function preprocess_data(dataset::Matrix{Float32}, communication_graph::Matrix{I
 
     # Plot and save figures of the original data, X, Y, communication_idxs if save_figures==true:
     if save_figures
-        h1 = heatmap(dataset, title="Original Data", xlabel="Genes", ylabel="Cells")
+        h1 = heatmap(dataset, title="Simulated Data", xlabel="Features", ylabel="Observation Units")
         h2 = heatmap(X, title="Standardized Data", xlabel="Genes", ylabel="Cells")
         h3 = heatmap(Y, title="Response Matrix t=0", xlabel="Genes", ylabel="Cells")
         s = scatter(1:n_cells, communication_idxs, title="Matching partners t=0", xlabel="Sender cells", ylabel="Receiver cells", markersize=1, markerstrokewidth=0.1, legend=false)
@@ -191,6 +191,7 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z:
     B = zeros(Float32, size(X)[2], size(Y_t)[2])
     Ŷ = zeros(Float32, size(Z)[1], size(B)[2])
     communication_idxs = zeros(Int, size(Z)[1])
+    communication_idxs_duplicate = communication_idxs
 
     mse = []
 
@@ -208,6 +209,8 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z:
         
         # Get communication partners using cosine similarity:
         communication_idxs = refine_interaction_partners(Z, Ŷ, save_figures=save_figures_t, iter=t)
+        println("Number of communication partners changed: ", sum(communication_idxs .!= communication_idxs_duplicate))
+        communication_idxs_duplicate = communication_idxs
         Y_t = get_Y(Z, communication_idxs, save_figures=save_figures_t, iter=t)
 
         if save_figures_t

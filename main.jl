@@ -15,7 +15,7 @@ gr(dpi=300)
 ################################################
 # Initialize for (possible) dimension reduction:
 ################################################
-dim_reduction = "VAE"    # "none", "AE", "VAE"
+dim_reduction = "none"    # "none", "AE", "VAE"
 AE_architecture = "simple"   # "simple", "deep"
 latent_dim = 4
 encoder = Chain()   # global initialization
