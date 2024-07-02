@@ -19,14 +19,14 @@ use_data = "real"    # "simulated", "real"
 ################################################
 # Initialize for (possible) dimension reduction:
 ################################################
-dim_reduction = "none"    # "none", "AE", "VAE"
+dim_reduction = "VAE"    # "none", "AE", "VAE"
 AE_architecture = "simple"   # "simple", "deep"
 latent_dim = 4
 encoder = Chain()   # global initialization
 ################################################
 # Creation and saving of plots: (requires directory "output/auto_output" in the working directory)
 ################################################
-create_plots = false   # true, false
+create_plots = true   # true, false
 ################################################
 
 
