@@ -52,3 +52,5 @@ CCI_sub_sum = CSV.read(datapath * "CCIsum_table_sub.csv", DataFrame);
 #The first column contains the source cell types, all types are considered as sender types. 
 #The second column consists of the target cell types, which were determined by the top interacting cell group scores according to CellChat in CCI_sub_sum.
 group_interactions = readdlm(datapath * "group_interactions.txt", '\t', String);
+
+initial_communication_idxs = CSV.read(datapath * "matched_inds.csv", DataFrame)[!,2];
