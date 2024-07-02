@@ -13,6 +13,10 @@ include("dimension_reduction.jl")
 gr(dpi=300)
 
 ################################################
+# Initialize which data to use:
+################################################
+use_data = "real"    # "simulated", "real"
+################################################
 # Initialize for (possible) dimension reduction:
 ################################################
 dim_reduction = "none"    # "none", "AE", "VAE"
@@ -22,7 +26,7 @@ encoder = Chain()   # global initialization
 ################################################
 # Creation and saving of plots: (requires directory "output/auto_output" in the working directory)
 ################################################
-create_plots = true   # true, false
+create_plots = false   # true, false
 ################################################
 
 
@@ -30,12 +34,17 @@ create_plots = true   # true, false
 # Main script:
 ######################
 
-# Generate the simulated data (set a seed for reproducibility):
-communication_graph = [0 1 0 0; 0 0 1 0; 0 0 0 1; 1 0 0 0];
-dataset, group_communication_matrix, cell_group_assignments, receptor_genes, sel_receptors, ligand_genes, sel_ligands = simulate_interacting_singleCells(1000, 60, 4; seed=7, communication_graph = communication_graph)
-
-# Preprocess the data:
-X, Y = preprocess_data(dataset, group_communication_matrix, noise_percentage=0.3f0, save_figures=create_plots)
+if use_data == "real"
+    include("data/load_data.jl")
+    X = standardize(X_source)
+    Y = standardize(X_target)
+else
+    # Generate the simulated data (set a seed for reproducibility):
+    communication_graph = [0 1 0 0; 0 0 1 0; 0 0 0 1; 1 0 0 0];
+    dataset, group_communication_matrix, cell_group_assignments, receptor_genes, sel_receptors, ligand_genes, sel_ligands = simulate_interacting_singleCells(1000, 60, 4; seed=7, communication_graph = communication_graph)
+    # Preprocess the data:
+    X, Y = preprocess_data(dataset, group_communication_matrix, noise_percentage=0.3f0, save_figures=create_plots)
+end
 
 # Iterative refinement of the mapping of observational units using componentwise boosting (and possibly dimension reduction):
 if dim_reduction in ["AE", "VAE"]

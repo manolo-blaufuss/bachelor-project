@@ -14,7 +14,7 @@ function get_y(X::Matrix{Float32}, idx::Int, communication_idxs::Vector{Int})
     for i in 1:length(idx_expression)
         y[i] = idx_expression[communication_idxs[i]]
     end
-    return (y .- mean(y))./ std(y, corrected=true)
+    return y
 end
 
 #######################################
@@ -191,7 +191,6 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z:
     B = zeros(Float32, size(X)[2], size(Y_t)[2])
     Ŷ = zeros(Float32, size(Z)[1], size(B)[2])
     communication_idxs = zeros(Int, size(Z)[1])
-    communication_idxs_duplicate = communication_idxs
 
     mse = []
 
@@ -209,8 +208,6 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z:
         
         # Get communication partners using cosine similarity:
         communication_idxs = refine_interaction_partners(Z, Ŷ, save_figures=save_figures_t, iter=t)
-        println("Number of communication partners changed: ", sum(communication_idxs .!= communication_idxs_duplicate))
-        communication_idxs_duplicate = communication_idxs
         Y_t = get_Y(Z, communication_idxs, save_figures=save_figures_t, iter=t)
 
         if save_figures_t
