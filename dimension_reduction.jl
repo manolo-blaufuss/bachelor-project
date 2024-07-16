@@ -38,45 +38,6 @@ function Base.summary(AE::Autoencoder)
     )
 end
 
-#---training function vanilla AE:
-function train_AE!(X::AbstractMatrix{<:AbstractFloat}, AE::Autoencoder)
-
-    if eltype(X) != Float32
-        @warn "Matrix elements are not of type Float32. This may slow down the optimization process."
-    end
-
-    n = size(X, 2)
-
-    @info "Training AE for $(AE.HP.epochs) epochs with a batchsize of $(AE.HP.batchsize), i.e., $(Int(round(AE.HP.epochs * n / AE.HP.batchsize))) update iterations."
-
-    opt = ADAMW(AE.HP.η, (0.9, 0.999), AE.HP.λ)
-    opt_state = Flux.setup(opt, (AE.encoder, AE.decoder))
-    
-    mean_trainlossPerEpoch = []
-    @showprogress for epoch in 1:AE.HP.epochs
-
-        loader = Flux.Data.DataLoader(X, batchsize=AE.HP.batchsize, shuffle=true)
-
-        batchLosses = Float32[]
-        for batch in loader
-             
-            batchLoss, grads = Flux.withgradient(AE.encoder, AE.decoder) do enc, dec
-               X̂ = dec(enc(batch))
-               Flux.mse(X̂, batch)
-            end
-            push!(batchLosses, batchLoss)
-
-            Flux.update!(opt_state, (AE.encoder, AE.decoder), (grads[1], grads[2]))
-        end
-
-        push!(mean_trainlossPerEpoch, mean(batchLosses))
-    end
-
-    AE.Z = encoder(X)
-
-    return mean_trainlossPerEpoch
-end
-
 #---help functions for VAE:
 function divide_dimensions(x::AbstractArray{T}) where T
     n = size(x, 1)
@@ -94,6 +55,25 @@ function reparameterize(mu::AbstractArray{T}, logvar::AbstractArray{T}) where T
 end
 
 # Loss function
+function vae_loss_gaußian(x::AbstractArray{T}, encoder::Union{Chain, Dense}, decoder::Union{Chain, Dense}; β::Float32=1.0f0) where T
+    # encoder mu and logvar
+    mu_enc, logvar_enc = divide_dimensions(encoder(x))
+
+    # reparametrization trick
+    z = reparameterize(mu_enc, logvar_enc)
+
+    # decoder mu and logvar
+    mu_dec, logvar_dec = divide_dimensions(decoder(z))
+
+    # Reconstruction loss
+    recon_loss = 0.5f0 * sum((x .- mu_dec).^2 ./ exp.(logvar_dec) .+ logvar_dec) 
+
+    # KL divergence
+    kl_loss = -0.5f0 * sum(1f0 .+ logvar_enc .- mu_enc.^2 .- exp.(logvar_enc))
+
+    return recon_loss + β * kl_loss 
+end
+
 function vae_loss_gaußian_fixedvariance(x::AbstractArray{T}, encoder::Union{Chain, Dense}, decoder::Union{Chain, Dense}; β::Float32=1.0f0, var::Float32=0.1f0) where T
     # encoder mu and logvar
     mu_enc, logvar_enc = divide_dimensions(encoder(x))
@@ -125,6 +105,43 @@ function get_VAE_latentRepresentation(encoder::Union{Chain, Dense}, X::AbstractA
     end
 
     return μ, logvar, z
+end
+
+function train_gaußianVAE!(X::AbstractMatrix{<:AbstractFloat}, AE::Autoencoder; β::Float32=1.0f0)
+
+    if eltype(X) != Float32
+        @warn "Matrix elements are not of type Float32. This may slow down the optimization process."
+    end
+
+    n = size(X, 2)
+
+    @info "Training AE for $(AE.HP.epochs) epochs with a batchsize of $(AE.HP.batchsize), i.e., $(Int(round(AE.HP.epochs * n / AE.HP.batchsize))) update iterations."
+
+    opt = ADAMW(AE.HP.η, (0.9, 0.999), AE.HP.λ)
+    opt_state = Flux.setup(opt, (AE.encoder, AE.decoder))
+    
+    mean_trainlossPerEpoch = []
+    @showprogress for epoch in 1:AE.HP.epochs
+
+        loader = Flux.Data.DataLoader(X, batchsize=AE.HP.batchsize, shuffle=true) 
+
+        batchLosses = Float32[]
+        for batch in loader
+             
+            batchLoss, grads = Flux.withgradient(AE.encoder, AE.decoder) do enc, dec
+                vae_loss_gaußian(batch, enc, dec; β=β)
+            end
+            push!(batchLosses, batchLoss)
+
+            Flux.update!(opt_state, (AE.encoder, AE.decoder), (grads[1], grads[2]))
+        end
+
+        push!(mean_trainlossPerEpoch, mean(batchLosses))
+    end
+
+    AE.Z = get_VAE_latentRepresentation(AE.encoder, X)[1]
+
+    return mean_trainlossPerEpoch
 end
 
 function train_gaußianVAE_fixedvariance!(X::AbstractMatrix{<:AbstractFloat}, AE::Autoencoder; β::Float32=1.0f0, var::Float32=1.0f0)
@@ -165,36 +182,26 @@ function train_gaußianVAE_fixedvariance!(X::AbstractMatrix{<:AbstractFloat}, AE
 end
 
 
-function dimension_reduction(X::Matrix{Float32}, Y::Matrix{Float32}, method::String, architecture::String, latent_dim::Int; seed=42, save_figures=false)
+function dimension_reduction(X::Matrix{Float32}, Y::Matrix{Float32}, method::String, latent_dim::Int; seed=42, save_figures=false)
     HP = Hyperparameter(zdim=latent_dim, epochs=20, batchsize=2^7, η=0.01f0, λ=0.0f0)
     akt = tanh_fast #relu, sigmoid, tanh_fast, tanh, ...
-    if method == "AE"
-        if architecture == "simple"
-            # One layer, linear:
-            encoder = Chain(Dense(size(X, 2), HP.zdim))
-            decoder = Chain(Dense(HP.zdim, size(X, 2)))
-        elseif architecture == "deep"
-            # Three layers, akt:
-            encoder = Chain(Dense(size(X, 2), 32, akt), Dense(32, HP.zdim, akt), Dense(HP.zdim, HP.zdim, akt))
-            decoder = Chain(Dense(HP.zdim, 32, akt), Dense(32, size(X, 2), akt), Dense(size(X, 2), size(X, 2)))
-        end
-        AE = Autoencoder(;encoder, decoder, HP)
-        summary(AE)
-        mean_trainlossPerEpoch = train_AE!(X', AE)
-        Z_X = AE.encoder(X')
-        Z_Y = AE.encoder(Y')
-    elseif method == "VAE"
+    if method == "VAE"
         modelseed = seed;
         Random.seed!(modelseed)
-        if architecture == "simple"
-            # One layer, linear:
-            encoder = Chain(Dense(size(X, 2), 2 * HP.zdim))
-            decoder = Chain(Dense(HP.zdim, size(X, 2)))
-        elseif architecture == "deep"
-            # Three layers, akt:
-            encoder = Chain(Dense(size(X, 2), 64, akt), Dense(64, 2*HP.zdim, akt), Dense(2*HP.zdim, 2*HP.zdim))
-            decoder = Chain(Dense(HP.zdim, 64, akt), Dense(64, size(X, 2), akt), Dense(size(X, 2), size(X, 2)))
-        end
+        # VAE architecture, default: 2 layers, akt
+        encoder = Chain(Dense(size(X, 2), 2*HP.zdim, akt), Dense(2*HP.zdim, 2*HP.zdim))
+        decoder = Chain(Dense(HP.zdim, 2* size(X, 2), akt), Dense(2 * size(X, 2), 2 * size(X, 2)))
+        AE = Autoencoder(;encoder, decoder, HP)
+        summary(AE)
+        mean_trainlossPerEpoch = train_gaußianVAE!(X', AE)
+        Z_X = get_VAE_latentRepresentation(AE.encoder, X'; sampling=false)[1]
+        Z_Y = get_VAE_latentRepresentation(AE.encoder, Y'; sampling=false)[1]
+    elseif method == "VAE_fixed"
+        modelseed = seed;
+        Random.seed!(modelseed)
+        # VAE architecture, default: 2 layers, akt
+        encoder = Chain(Dense(size(X, 2), 2*HP.zdim, akt), Dense(2*HP.zdim, 2*HP.zdim))
+        decoder = Chain(Dense(HP.zdim, size(X, 2), akt), Dense(size(X, 2), size(X, 2)))
         AE = Autoencoder(;encoder, decoder, HP)
         summary(AE)
         mean_trainlossPerEpoch = train_gaußianVAE_fixedvariance!(X', AE)
@@ -202,8 +209,8 @@ function dimension_reduction(X::Matrix{Float32}, Y::Matrix{Float32}, method::Str
         Z_Y = get_VAE_latentRepresentation(AE.encoder, Y'; sampling=false)[1]
     end
     if save_figures
-        h1 = heatmap(Z_X', title="Latent Representation of X", xlabel="Latent Dimensions", ylabel="Cells")
-        h2 = heatmap(Z_Y', title="Latent Representation of Y", xlabel="Latent Dimensions", ylabel="Cells")
+        h1 = heatmap(Z_X', title="Latent Representation of X", xlabel="Latent Dimensions", ylabel="Observation Units")
+        h2 = heatmap(Z_Y', title="Latent Representation of Y", xlabel="Latent Dimensions", ylabel="Observation Units")
         h3 = heatmap(abs.(cor(Z_X, dims=2)), xlabel = "Latent Dimensions", ylabel = "Latent Dimensions", title = "Absolute Correlation", color = :reds)
         p = plot(1:length(mean_trainlossPerEpoch), mean_trainlossPerEpoch, title = "Mean train loss per epoch", xlabel = "Epoch", ylabel = "Loss", legend = true, label = "Train loss", linecolor = :red, linewidth = 2)
         savefig(h1, "output/auto_output/Z_X.png")

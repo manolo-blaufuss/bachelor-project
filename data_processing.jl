@@ -79,7 +79,7 @@ function get_Y(X::Matrix{Float32}, communication_idxs::Vector{Int}; save_figures
     end
     if save_figures
         filename = "Y_" * string(iter)
-        h = heatmap(Y, title="Response Matrix (iteration " * string(iter) * ")", xlabel="Genes", ylabel="Cells")
+        h = heatmap(Y, title="Response Matrix (iteration " * string(iter) * ")", xlabel="Features", ylabel="Observation Units")
         savefig(h, "output/auto_output/" * filename * ".png")
         savefig(h, "output/auto_output/" * filename * ".svg")
     end
@@ -90,7 +90,7 @@ function get_prediction(X::Matrix{Float32}, B::Matrix{Float32}; save_figures::Bo
     Ŷ = X * B
     if save_figures
         filename = "prediction_" * string(iter)
-        h = heatmap(Ŷ, title="Predicted Response Matrix (iteration " * string(iter) * ")", xlabel="Genes", ylabel="Cells")
+        h = heatmap(Ŷ, title="Predicted Response Matrix (iteration " * string(iter) * ")", xlabel="Features", ylabel="Observation Units")
         savefig(h, "output/auto_output/" * filename * ".png")
         savefig(h, "output/auto_output/" * filename * ".svg")
     end
@@ -100,12 +100,12 @@ end
 function refine_interaction_partners(X::Matrix{Float32}, Ŷ::Matrix{Float32}; save_figures::Bool=false, iter::Int=-1)
     n_cells, n_genes = size(X)
     communication_idxs = zeros(Int, n_cells)
-    if save_figures
-        # Sample two random cells and following cell to plot the cosine similarity:
-        sample_cells = rand(1:n_cells, 2)
-        push!(sample_cells, sample_cells[1] + 1)
-        push!(sample_cells, sample_cells[2] + 1)
-    end
+    
+    # Sample two random cells and following cell to plot the cosine similarity:
+    sample_cells = rand(1:n_cells, 2)
+    push!(sample_cells, sample_cells[1] + 1)
+    push!(sample_cells, sample_cells[2] + 1)
+    
     for i in 1:n_cells
         expression_Ŷ = Ŷ[i, :]
         cosine_similarities = zeros(n_cells)
@@ -122,13 +122,13 @@ function refine_interaction_partners(X::Matrix{Float32}, Ŷ::Matrix{Float32}; sa
         sel_indices = findall(x -> x >= similarity_threshold, cosine_similarities)
         communication_idxs[i] = rand(sel_indices)
         if save_figures && i in sample_cells
-            s = scatter(cosine_similarities, title="Cosine Similarities (cell " *string(i)* ", iteration " * string(iter) * ")", xlabel="Cells", ylabel="Cosine Similarity", markersize=1, markerstrokewidth=0.1, legend=false)
-            savefig(s, "output/auto_output/cosine_similarities_" *string(i) *"_"* string(iter) * ".png")
-            savefig(s, "output/auto_output/cosine_similarities_" *string(i) *"_"* string(iter) * ".svg")
+            #s = scatter(cosine_similarities, title="Cosine Similarities (unit " *string(i)* ", iteration " * string(iter) * ")", xlabel="Cells", ylabel="Cosine Similarity", markersize=1, markerstrokewidth=0.1, legend=false)
+            #savefig(s, "output/auto_output/cosine_similarities_" *string(i) *"_"* string(iter) * ".png")
+            #savefig(s, "output/auto_output/cosine_similarities_" *string(i) *"_"* string(iter) * ".svg")
         end
     end
     if save_figures
-        s = scatter(1:n_cells, communication_idxs, title="Matching partners (iteration " * string(iter) * ")", xlabel="Sender cells", ylabel="Receiver cells", markersize=1, markerstrokewidth=0.1, legend=false)
+        s = scatter(1:n_cells, communication_idxs, title="Matching partners (iteration " * string(iter) * ")", xlabel="Sender units", ylabel="Receiver units", markersize=1, markerstrokewidth=0.1, legend=false)
         savefig(s, "output/auto_output/matching_partners_" * string(iter) * ".png")
         savefig(s, "output/auto_output/matching_partners_" * string(iter) * ".svg")
     end
@@ -165,9 +165,9 @@ function preprocess_data(dataset::Matrix{Float32}, communication_graph::Matrix{I
     # Plot and save figures of the original data, X, Y, communication_idxs if save_figures==true:
     if save_figures
         h1 = heatmap(dataset, title="Simulated Data", xlabel="Features", ylabel="Observation Units")
-        h2 = heatmap(X, title="Standardized Data", xlabel="Genes", ylabel="Cells")
-        h3 = heatmap(Y, title="Response Matrix t=0", xlabel="Genes", ylabel="Cells")
-        s = scatter(1:n_cells, communication_idxs, title="Matching partners t=0", xlabel="Sender cells", ylabel="Receiver cells", markersize=1, markerstrokewidth=0.1, legend=false)
+        h2 = heatmap(X, title="Standardized Data", xlabel="Features", ylabel="Observation Units")
+        h3 = heatmap(Y, title="Response Matrix t=0", xlabel="Features", ylabel="Observation Units")
+        s = scatter(1:n_cells, communication_idxs, title="Initial matching partners", xlabel="Sender units", ylabel="Receiver units", markersize=1, markerstrokewidth=0.1, legend=false)
         savefig(h1, "output/auto_output/dataset.png")
         savefig(h1, "output/auto_output/dataset.svg")
         savefig(h2, "output/auto_output/X.png")
@@ -181,7 +181,7 @@ function preprocess_data(dataset::Matrix{Float32}, communication_graph::Matrix{I
 end
 
 
-function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z::Union{Matrix{Float32}, Nothing} = nothing, save_figures::Bool=false)
+function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}, groups::AbstractArray; Z::Union{Matrix{Float32}, Nothing} = nothing, save_figures::Bool=false)
     if isnothing(Z)
         Z = X
     else
@@ -191,15 +191,18 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z:
     B = zeros(Float32, size(X)[2], size(Y_t)[2])
     Ŷ = zeros(Float32, size(Z)[1], size(B)[2])
     communication_idxs = zeros(Int, size(Z)[1])
+    communication_idxs_last = zeros(Int, size(Z)[1])
+    matching_coefficient = 0
 
     mse = []
 
     for t in 1:n
-        if save_figures && (t == 1 || t % 5 == 0)
+        if save_figures && (t == 1 || t % 5 == 0 || t == n)
             save_figures_t = true
         else
             save_figures_t = false
         end
+        save_figures_t = save_figures
         # Perform cmponentwise boosting
         B = get_beta_matrix(X, Y_t, save_figures=save_figures_t, iter=t)
 
@@ -214,15 +217,35 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z:
             push!(mse, (t, mean((Y_t - Ŷ).^2, dims=1)'))
         end
 
+        # Check convergence:
+        println(count(x -> 251 <= x <= 500, communication_idxs[1:250])+count(x -> 501 <= x <= 750, communication_idxs[251:500])+count(x -> 751 <= x <= 1000, communication_idxs[501:750])+count(x -> 1 <= x <= 250, communication_idxs[751:1000]))
+        convergence = true
+        for i in 1:length(communication_idxs)
+            for group in groups
+                if communication_idxs[i] in group && !(communication_idxs_last[i] in group)
+                    convergence = false
+                    
+                end
+            end
+        end
+        if convergence
+            println("Convergence reached after iteration ", t)
+            #break
+        end
+        communication_idxs_last = copy(communication_idxs)
+        if t == n
+            matching_count = count(x -> 251 <= x <= 500, communication_idxs[1:250])+count(x -> 501 <= x <= 750, communication_idxs[251:500])+count(x -> 751 <= x <= 1000, communication_idxs[501:750])+count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+            matching_coefficient = matching_count / length(communication_idxs)
+        end
     end
     # Plot MSEs if save_figures==true:
     if save_figures
-        plot(mse[1][2], label="t="*string(mse[1][1]), title="Mean Squared Error", xlabel="Genes", ylabel="MSE")
+        plot(mse[1][2], label="t="*string(mse[1][1]), title="Mean Squared Error", xlabel="Features", ylabel="MSE")
         for i in 2:length(mse)
             plot!(mse[i][2], label="t="*string(mse[i][1]))
         end
         savefig("output/auto_output/mse.png")
         savefig("output/auto_output/mse.svg")
     end
-    return B, Ŷ, communication_idxs, Y_t
+    return B, Ŷ, communication_idxs, Y_t, matching_coefficient
 end
