@@ -1,3 +1,5 @@
+# This script contains code provided by Niklas Brunn
+
 """
 simulate_interacting_singleCells(n_cells::Int = 1000, n_genes::Int = 60, n_groups::Int = 4;
         dropout_rate::Real = 0.1,

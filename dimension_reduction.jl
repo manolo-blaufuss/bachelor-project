@@ -1,3 +1,5 @@
+# This script contains code provided by Niklas Brunn
+
 #--Hyperparameter:
 mutable struct Hyperparameter
     zdim::Int # number of latent dimensions

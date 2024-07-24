@@ -1,4 +1,4 @@
-### Code based on file linear_regression.jl from the repository
+# This script contains code provided by Niklas Brunn
 
 ########################
 #Componentwise Boosting:

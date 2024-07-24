@@ -4,9 +4,6 @@
 
 include("componentwise_boosting.jl")
 
-
-
-
 function get_y(X::Matrix{Float32}, idx::Int, communication_idxs::Vector{Int})
     # Define the response vector y:
     idx_expression = X[:, idx]
@@ -181,7 +178,7 @@ function preprocess_data(dataset::Matrix{Float32}, communication_graph::Matrix{I
 end
 
 
-function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}, groups::AbstractArray; Z::Union{Matrix{Float32}, Nothing} = nothing, save_figures::Bool=false)
+function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z::Union{Matrix{Float32}, Nothing} = nothing, save_figures::Bool=false, groups::Union{AbstractArray, Nothing} = nothing)
     if isnothing(Z)
         Z = X
     else
@@ -217,24 +214,28 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}, gr
             push!(mse, (t, mean((Y_t - Ŷ).^2, dims=1)'))
         end
 
-        # Check convergence:
-        println(count(x -> 251 <= x <= 500, communication_idxs[1:250])+count(x -> 501 <= x <= 750, communication_idxs[251:500])+count(x -> 751 <= x <= 1000, communication_idxs[501:750])+count(x -> 1 <= x <= 250, communication_idxs[751:1000]))
-        convergence = true
-        for i in 1:length(communication_idxs)
-            for group in groups
-                if communication_idxs[i] in group && !(communication_idxs_last[i] in group)
-                    convergence = false
-                    
+        # Check convergence if groups given:
+        #println(count(x -> 251 <= x <= 500, communication_idxs[1:250])+count(x -> 501 <= x <= 750, communication_idxs[251:500])+count(x -> 751 <= x <= 1000, communication_idxs[501:750])+count(x -> 1 <= x <= 250, communication_idxs[751:1000]))
+        #println(count(x -> 1794 <= x <= 2087, communication_idxs[1:1228])+count(x -> 1229 <= x <= 1309, communication_idxs[1229:1309])+count(x -> 1794 <= x <= 2087, communication_idxs[1310:1793])+count(x -> 1794 <= x <= 2087, communication_idxs[1794:2087]))
+        #println(count(x -> 1794 <= x <= 2087, communication_idxs)+count(x -> 1229 <= x <= 1309, communication_idxs))        
+        if !isnothing(groups)
+            convergence = true
+            for i in 1:length(communication_idxs)
+                for group in groups
+                    if communication_idxs[i] in group && !(communication_idxs_last[i] in group)
+                        convergence = false
+                    end
                 end
             end
+            if convergence
+                println("Convergence reached after iteration ", t)
+                break
+            end
+            communication_idxs_last = copy(communication_idxs)
         end
-        if convergence
-            println("Convergence reached after iteration ", t)
-            #break
-        end
-        communication_idxs_last = copy(communication_idxs)
         if t == n
             matching_count = count(x -> 251 <= x <= 500, communication_idxs[1:250])+count(x -> 501 <= x <= 750, communication_idxs[251:500])+count(x -> 751 <= x <= 1000, communication_idxs[501:750])+count(x -> 1 <= x <= 250, communication_idxs[751:1000])
+            #matching_count = count(x -> 1794 <= x <= 2087, communication_idxs[1:1228])+count(x -> 1229 <= x <= 1309, communication_idxs[1229:1309])+count(x -> 1794 <= x <= 2087, communication_idxs[1310:1793])+count(x -> 1794 <= x <= 2087, communication_idxs[1794:2087])
             matching_coefficient = matching_count / length(communication_idxs)
         end
     end
