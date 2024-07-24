@@ -136,6 +136,21 @@ end
 # Data Processing: Main Functions
 #######################################
 
+"""
+    preprocess_data(dataset::Matrix{Float32}, communication_graph::Matrix{Int}; noise_percentage::Float32=0.3f0, save_figures::Bool=false)
+
+Preprocess the data by standardizing the dataset, assigning initial communication partners for each cell, and getting the response matrix Y.
+
+# Arguments
+- `dataset::Matrix{Float32}`: The dataset of size n x p.
+- `communication_graph::Matrix{Int}`: The communication graph of size n_groups x n_groups with 1 indicating communication between groups.
+- `noise_percentage::Float32`: The percentage of noise in the initial communication partners.
+- `save_figures::Bool`: Whether to save the figures.
+
+# Returns
+- `X::Matrix{Float32}`: The standardized dataset.
+- `Y::Matrix{Float32}`: The response matrix Y.
+"""
 function preprocess_data(dataset::Matrix{Float32}, communication_graph::Matrix{Int}; noise_percentage::Float32=0.3f0, save_figures::Bool=false)
     n_cells = size(dataset)[1]
     n_groups = size(communication_graph)[1]
@@ -178,6 +193,26 @@ function preprocess_data(dataset::Matrix{Float32}, communication_graph::Matrix{I
 end
 
 
+"""
+    iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z::Union{Matrix{Float32}, Nothing} = nothing, save_figures::Bool=false, groups::Union{AbstractArray, Nothing} = nothing)
+
+Iteratively refine the mapping of observational units using componentwise boosting.
+
+# Arguments
+- `n::Int`: The number of iterations.
+- `X::Matrix{Float32}`: The standardized dataset of size n x p.
+- `Y::Matrix{Float32}`: The response matrix Y.
+- `Z::Union{Matrix{Float32}, Nothing}`: The latent representation (if applicable) of the dataset.
+- `save_figures::Bool`: Whether to save the figures.
+- `groups::Union{AbstractArray, Nothing}`: The groups for convergence checking.
+
+# Returns
+- `B::Matrix{Float32}`: The beta matrix.
+- `Ŷ::Matrix{Float32}`: The predicted response matrix.
+- `communication_idxs::Vector{Int}`: The communication partners.
+- `Y_t::Matrix{Float32}`: The response matrix Y after the last iteration.
+- `matching_coefficient::Float32`: The matching coefficient (percentage of correct assignments). Important: Check the correct assignment of groups in the function.
+"""
 function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z::Union{Matrix{Float32}, Nothing} = nothing, save_figures::Bool=false, groups::Union{AbstractArray, Nothing} = nothing)
     if isnothing(Z)
         Z = X

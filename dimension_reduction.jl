@@ -184,6 +184,28 @@ function train_gaußianVAE_fixedvariance!(X::AbstractMatrix{<:AbstractFloat}, AE
 end
 
 
+######################
+# Main function:
+######################
+
+
+"""
+    dimension_reduction(X::Matrix{Float32}, Y::Matrix{Float32}, method::String, latent_dim::Int; seed=42, save_figures=false)
+
+Dimension reduction using a VAE with a fixed variance or a VAE with a learned variance.
+
+# Arguments
+- `X::Matrix{Float32}`: Data matrix.
+- `Y::Matrix{Float32}`: Response matrix.
+- `method::String`: Method for dimension reduction. Either "VAE" or "VAE_fixed".
+- `latent_dim::Int`: Number of latent dimensions.
+- `seed::Int`: Seed for reproducibility.
+- `save_figures::Bool`: Save figures.
+
+# Output
+- `Z_X::Matrix{Float32}`: Latent representation of X.
+- `Z_Y::Matrix{Float32}`: Latent representation of Y.
+"""
 function dimension_reduction(X::Matrix{Float32}, Y::Matrix{Float32}, method::String, latent_dim::Int; seed=42, save_figures=false)
     HP = Hyperparameter(zdim=latent_dim, epochs=20, batchsize=2^7, η=0.01f0, λ=0.0f0)
     akt = tanh_fast #relu, sigmoid, tanh_fast, tanh, ...
