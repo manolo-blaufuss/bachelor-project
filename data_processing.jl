@@ -264,7 +264,7 @@ function iterative_rematching(n::Int, X::Matrix{Float32}, Y::Matrix{Float32}; Z:
             end
             if convergence
                 println("Convergence reached after iteration ", t)
-                break
+                #break
             end
             communication_idxs_last = copy(communication_idxs)
         end
